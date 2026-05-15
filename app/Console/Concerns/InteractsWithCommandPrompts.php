@@ -2,6 +2,7 @@
 
 namespace App\Console\Concerns;
 
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
@@ -190,7 +191,9 @@ trait InteractsWithCommandPrompts
             return true;
         }
 
-        $this->error("Module {$module} does not exist.");
+        if ($this instanceof Command) {
+            $this->error("Module {$module} does not exist.");
+        }
 
         return false;
     }

@@ -2,6 +2,7 @@
 
 namespace App\Console\Concerns;
 
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
@@ -31,13 +32,18 @@ trait GeneratesScaffoldFiles
         $filePath = $directory.'/'.$filename;
 
         if (! $this->shouldWriteFile($force, $filePath)) {
-            $this->warn("Skipped existing file: {$filePath}");
+            if ($this instanceof Command) {
+                $this->warn("Skipped existing file: {$filePath}");
+            }
 
             return false;
         }
 
         File::put($filePath, $content);
-        $this->line("Created: {$filePath}");
+
+        if ($this instanceof Command) {
+            $this->line("Created: {$filePath}");
+        }
 
         return true;
     }
