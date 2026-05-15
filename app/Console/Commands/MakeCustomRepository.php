@@ -2,41 +2,51 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Concerns\GeneratesScaffoldFiles;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
+use function Laravel\Prompts\text;
+
 class MakeCustomRepository extends Command
 {
-    protected $signature = 'make:custom-repository {name} {--module=} {--force} {--model=} {--demo}';
+    use GeneratesScaffoldFiles;
+
+    protected $signature = 'make:custom-repository {name?} {--module=} {--force} {--model=} {--demo}';
 
     protected $description = 'Create a new repository with optional module support and demo methods';
 
-    public function handle(): void
+    public function handle(): int
     {
-        $name = $this->argument('name');
-        $module = $this->option('module');
+        $name = $this->promptName($this->argument('name'), 'Repository name', 'e.g. Book');
+        $module = $this->promptModule($this->option('module'));
         $force = $this->option('force');
-        $model = $this->option('model');
-        $demo = $this->option('demo');
+        $demo = $this->promptDemoMethods($this->option('demo'));
 
-        // Ensure the name ends with "Repository" for consistency
+        if (! $this->ensureModuleExists($module)) {
+            return self::FAILURE;
+        }
+
         if (! Str::endsWith($name, 'Repository')) {
             $name = $name.'Repository';
         }
 
-        // Handle nested repositories
         $repositoryName = Str::studly(class_basename($name));
         $namespacePath = Str::studly(dirname($name));
+        $model = $this->option('model');
+
+        if (! filled($model)) {
+            $model = text(
+                label: 'Associated model name',
+                placeholder: Str::studly(Str::beforeLast($repositoryName, 'Repository')),
+                default: Str::studly(Str::beforeLast($repositoryName, 'Repository')),
+                required: true,
+            );
+        }
 
         if ($module) {
             $modulePath = base_path("domains/{$module}");
-            if (! File::exists($modulePath)) {
-                $this->error("Module {$module} does not exist.");
-
-                return;
-            }
-
             $namespace = 'Modules\\'.Str::studly($module).'\\Repositories'.
                 ($namespacePath !== '.' ? '\\'.str_replace('/', '\\', $namespacePath) : '');
             $path = $modulePath.'/src/Repositories/'.str_replace('\\', '/', $namespacePath);
@@ -50,16 +60,15 @@ class MakeCustomRepository extends Command
         }
 
         $filePath = $path.'/'.$repositoryName.'.php';
+        $existedBefore = File::exists($filePath);
 
-        if (File::exists($filePath) && ! $force) {
-            $this->error('Repository already exists!');
-
-            return;
+        if (! $this->writeScaffoldFile($path, "{$repositoryName}.php", $this->getRepositoryStub($repositoryName, $namespace, $module, $model, $demo), $force)) {
+            return $existedBefore ? self::INVALID : self::FAILURE;
         }
 
-        File::put($filePath, $this->getRepositoryStub($repositoryName, $namespace, $module, $model, $demo));
-
         $this->info('Repository created successfully!');
+
+        return self::SUCCESS;
     }
 
     private function getRepositoryStub(string $repositoryName, string $namespace, ?string $module, ?string $model, bool $demo): string

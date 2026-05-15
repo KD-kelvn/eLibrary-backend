@@ -2,94 +2,58 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Concerns\GeneratesScaffoldFiles;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 class MakeCustomModel extends Command
 {
-    protected $signature = 'make:custom-model {name} {--auditable} {--force} {--module=}';
+    use GeneratesScaffoldFiles;
+
+    protected $signature = 'make:custom-model {name?} {--auditable} {--force} {--module=}';
 
     protected $description = 'Create a new model with optional auditable functionality and module support';
 
-    public function handle(): void
+    public function handle(): int
     {
-        $name = $this->argument('name');
-        $auditable = $this->option('auditable');
+        $name = $this->promptName($this->argument('name'), 'Model name', 'e.g. BookCopy');
+        $auditable = $this->promptAuditable($this->option('auditable'));
         $force = $this->option('force');
-        $module = $this->option('module');
+        $module = $this->promptModule($this->option('module'));
 
-        // If auditable is not provided, ask interactively
-        if (! $auditable) {
-            $auditable = $this->confirm('Would you like to make this model auditable?', false);
+        if (! $this->ensureModuleExists($module)) {
+            return self::FAILURE;
         }
 
-        // Ensure the name does not end with "Model"
         if (Str::endsWith($name, 'Model')) {
-            $this->error('The model name should not end with "Model". Please try again.');
+            $this->error('The model name should not end with "Model".');
 
-            return;
+            return self::FAILURE;
         }
 
-        // Handle nested models (e.g., Admin/User)
         $modelName = Str::studly(class_basename($name));
-        $namespacePath = Str::studly(dirname($name));
+        $namespacePath = $this->namespacePathFromName($name);
 
         if ($module) {
-            // Handle module path
             $modulePath = base_path("domains/{$module}");
-            if (! File::exists($modulePath)) {
-                $this->error("Module {$module} does not exist.");
-
-                return;
-            }
-
             $namespace = 'Modules\\'.Str::studly($module).'\\Models'.
-                ($namespacePath !== '.' ? '\\'.str_replace('/', '\\', $namespacePath) : '');
+                ($namespacePath !== '' ? '\\'.$namespacePath : '');
             $path = $modulePath.'/src/Models/'.str_replace('\\', '/', $namespacePath);
         } else {
-            // Handle regular app path
-            $namespace = 'App\Models'.($namespacePath !== '.' ? '\\'.str_replace('/', '\\', $namespacePath) : '');
+            $namespace = 'App\\Models'.($namespacePath !== '' ? '\\'.$namespacePath : '');
             $path = app_path('Models/'.str_replace('\\', '/', $namespacePath));
         }
 
-        // Create directory if it doesn't exist
-        if (! File::exists($path)) {
-            File::makeDirectory($path, 0755, true);
-        }
-
         $filePath = $path.'/'.$modelName.'.php';
+        $existedBefore = File::exists($filePath);
 
-        // Check if file exists and force option is not set
-        if (File::exists($filePath) && ! $force) {
-            $this->error('Model already exists!');
-
-            return;
+        if (! $this->writeScaffoldFile($path, "{$modelName}.php", $this->modelStubContent($modelName, $namespace, $auditable), $force)) {
+            return $existedBefore ? self::INVALID : self::FAILURE;
         }
-
-        // Generate model content
-        $content = $this->getModelStub($modelName, $namespace, $auditable);
-
-        // Create the file
-        File::put($filePath, $content);
 
         $this->info('Model created successfully!');
-        $this->info('Love your codes, love your fellow developers, and love your future self by organizing your codebase properly.');
-    }
 
-    private function getModelStub(string $modelName, string $namespace, bool $auditable): string
-    {
-        $baseClass = $auditable ? 'BaseModelWithAudits' : 'BaseModal';
-        $fillableName = '$fillable';
-
-        return "<?php\n\n".
-            "namespace {$namespace};\n\n".
-            "use App\Models\\{$baseClass};\n\n".
-            "class {$modelName} extends {$baseClass}\n".
-            "{\n".
-            "    protected {$fillableName} = [\n".
-            "        //\n".
-            "    ];\n".
-            "}\n";
+        return self::SUCCESS;
     }
 }

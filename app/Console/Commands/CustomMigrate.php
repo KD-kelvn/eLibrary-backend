@@ -2,73 +2,105 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Concerns\InteractsWithCommandPrompts;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 
+use function Laravel\Prompts\select;
+
 class CustomMigrate extends Command
 {
+    use InteractsWithCommandPrompts;
+
     protected $signature = 'custom-migrate {--module=} {--group=} {--force} {--pretend}';
 
     protected $description = 'Run migrations for a specific domain and optional group folder';
 
-    public function handle(): void
+    public function handle(): int
     {
-        $domain = $this->option('module');
-        $group = $this->option('group');
+        $domain = $this->option('module') ?: null;
+        $group = $this->option('group') ?: null;
         $force = $this->option('force');
         $pretend = $this->option('pretend');
+
         if (! $domain && ! $group) {
-            $this->error('Module name or group name is required. Use --module or --group option.');
+            $target = $this->promptMigrationTarget();
 
-            return;
+            if ($target === 'app') {
+                $appGroups = $this->migrationGroupsForApp();
+                $group = $this->promptMigrationGroup(null, $appGroups);
+                $migrationsPath = $group
+                    ? database_path("migrations/{$group}")
+                    : database_path('migrations');
+            } else {
+                $modules = $this->availableModules();
+
+                if ($modules === []) {
+                    $this->error('No domain modules found.');
+
+                    return self::FAILURE;
+                }
+
+                $domain = select(
+                    label: 'Which domain should be migrated?',
+                    options: $modules,
+                    required: true,
+                );
+            }
         }
 
-        if ($domain) {
-            $domainPath = base_path("domains/{$domain}");
+        if ($domain && ! $this->ensureModuleExists($domain)) {
+            return self::FAILURE;
+        }
 
-            if (! File::exists($domainPath)) {
-                $this->error("Domain '{$domain}' does not exist.");
-
-                return;
+        if ($domain && ! isset($migrationsPath)) {
+            if (! filled($group)) {
+                $group = $this->promptMigrationGroup(null, $this->migrationGroupsForDomain($domain));
             }
-            $migrationsPath = "domains/{$domain}/database/migrations";
+
+            $migrationsPath = base_path("domains/{$domain}/database/migrations");
+
             if ($group) {
-                $migrationsPath = "domains/{$domain}/database/migrations/{$group}";
+                $migrationsPath .= "/{$group}";
             }
+        } elseif ($group && ! isset($migrationsPath)) {
+            $migrationsPath = database_path("migrations/{$group}");
         }
 
-        if ($group && ! $domain) {
-            $migrationsPath = base_path("database/migrations/{$group}");
+        if (! isset($migrationsPath) || ! File::isDirectory($migrationsPath)) {
+            $this->error('Migration path does not exist.');
+
+            return self::FAILURE;
         }
 
-        $this->info("Running migrations from: {$migrationsPath}");
+        $relativePath = str_replace(base_path().'/', '', $migrationsPath);
+        $this->info("Running migrations from: {$relativePath}");
 
-        // Build the migrate command options
         $options = [
-            '--path' => $migrationsPath,
+            '--path' => $relativePath,
         ];
 
         if ($force) {
             $options['--force'] = true;
         }
 
-        // Run the migration
-        $this->info('Migrating...');
         if ($pretend) {
             $options['--pretend'] = true;
-            $exitCode = Artisan::call('migrate', $options);
-        } else {
-            $exitCode = Artisan::call('migrate', $options);
         }
+
+        $this->info('Migrating...');
+        $exitCode = Artisan::call('migrate', $options);
 
         if ($exitCode === 0) {
             $this->info(Artisan::output());
-        } else {
-            $this->error('Migration failed!');
-            $this->info(Artisan::output());
 
-            return;
+            return self::SUCCESS;
         }
+
+        $this->error('Migration failed!');
+        $this->info(Artisan::output());
+
+        return self::FAILURE;
     }
 }

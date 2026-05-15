@@ -2,22 +2,29 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Concerns\GeneratesScaffoldFiles;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 class MakeCustomTrait extends Command
 {
-    protected $signature = 'make:custom-trait {name} {--module=} {--force} {--demo}';
+    use GeneratesScaffoldFiles;
+
+    protected $signature = 'make:custom-trait {name?} {--module=} {--force} {--demo}';
 
     protected $description = 'Create a new trait with optional module support and demo methods';
 
-    public function handle(): void
+    public function handle(): int
     {
-        $name = $this->argument('name');
-        $module = $this->option('module');
+        $name = $this->promptName($this->argument('name'), 'Trait name', 'e.g. Filterable');
+        $module = $this->promptModule($this->option('module'));
         $force = $this->option('force');
-        $demo = $this->option('demo');
+        $demo = $this->promptDemoMethods($this->option('demo'));
+
+        if (! $this->ensureModuleExists($module)) {
+            return self::FAILURE;
+        }
 
         // Ensure the name ends with "Trait" for consistency
         if (! Str::endsWith($name, 'Trait')) {
@@ -30,12 +37,6 @@ class MakeCustomTrait extends Command
 
         if ($module) {
             $modulePath = base_path("domains/{$module}");
-            if (! File::exists($modulePath)) {
-                $this->error("Module {$module} does not exist.");
-
-                return;
-            }
-
             $namespace = 'Modules\\'.Str::studly($module).'\\Traits'.
                 ($namespacePath !== '.' ? '\\'.str_replace('/', '\\', $namespacePath) : '');
             $path = $modulePath.'/src/Traits/'.str_replace('\\', '/', $namespacePath);
@@ -49,16 +50,15 @@ class MakeCustomTrait extends Command
         }
 
         $filePath = $path.'/'.$traitName.'.php';
+        $existedBefore = File::exists($filePath);
 
-        if (File::exists($filePath) && ! $force) {
-            $this->error('Trait already exists!');
-
-            return;
+        if (! $this->writeScaffoldFile($path, "{$traitName}.php", $this->getTraitStub($traitName, $namespace, $demo), $force)) {
+            return $existedBefore ? self::INVALID : self::FAILURE;
         }
 
-        File::put($filePath, $this->getTraitStub($traitName, $namespace, $demo));
-
         $this->info('Trait created successfully!');
+
+        return self::SUCCESS;
     }
 
     private function getTraitStub(string $traitName, string $namespace, bool $demo): string
