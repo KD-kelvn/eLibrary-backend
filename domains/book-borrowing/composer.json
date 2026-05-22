@@ -1,0 +1,24 @@
+{
+	"name": "modules/book-borrowing",
+	"description": "",
+	"type": "library",
+	"version": "1.0",
+	"license": "proprietary",
+	"require": {},
+	"autoload": {
+		"psr-4": {
+			"Modules\\BookBorrowing\\": "src/",
+			"Modules\\BookBorrowing\\Tests\\": "tests/",
+			"Modules\\BookBorrowing\\Database\\Factories\\": "database/factories/",
+			"Modules\\BookBorrowing\\Database\\Seeders\\": "database/seeders/"
+		}
+	},
+	"minimum-stability": "stable",
+	"extra": {
+		"laravel": {
+			"providers": [
+				"Modules\\BookBorrowing\\Providers\\BookBorrowingServiceProvider"
+			]
+		}
+	}
+}

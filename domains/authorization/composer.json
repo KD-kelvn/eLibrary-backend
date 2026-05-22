@@ -1,0 +1,24 @@
+{
+	"name": "modules/authorization",
+	"description": "",
+	"type": "library",
+	"version": "1.0",
+	"license": "proprietary",
+	"require": {},
+	"autoload": {
+		"psr-4": {
+			"Modules\\Authorization\\": "src/",
+			"Modules\\Authorization\\Tests\\": "tests/",
+			"Modules\\Authorization\\Database\\Factories\\": "database/factories/",
+			"Modules\\Authorization\\Database\\Seeders\\": "database/seeders/"
+		}
+	},
+	"minimum-stability": "stable",
+	"extra": {
+		"laravel": {
+			"providers": [
+				"Modules\\Authorization\\Providers\\AuthorizationServiceProvider"
+			]
+		}
+	}
+}
