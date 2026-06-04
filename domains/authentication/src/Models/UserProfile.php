@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserProfile extends BaseModelWithAudits
 {
+    protected $table = 'auth.user_profiles';
+
     protected $fillable = [
         'user_id',
         'fullname',

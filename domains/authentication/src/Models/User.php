@@ -16,6 +16,8 @@ class User extends Authenticatable
 {
     use AuditableWithDeletesTrait, HasApiTokens, Notifiable, SoftDeletes;
 
+    protected $table = 'auth.users';
+
     /**
      * The attributes that are mass assignable.
      *

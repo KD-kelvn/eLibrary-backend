@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OneTimeToken extends BaseModelWithAudits
 {
+    protected $table = 'auth.one_time_tokens';
+
     protected $fillable = [
         'user_id',
         'token',
