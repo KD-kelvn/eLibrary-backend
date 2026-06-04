@@ -4,6 +4,17 @@
         "words": [
             "php"
         ],
-        "paths": []
-    }
+        "paths": [
+            "composer.json",
+            "peck.json",
+            "pint.json",
+            "config",
+            "database",
+            "vendor"
+        ]
+    },
+    "paths": [
+        "app",
+        "domains"
+    ]
 }
