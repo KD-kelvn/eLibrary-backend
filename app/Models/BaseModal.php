@@ -3,9 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\Authentication\Models\User;
 use Yajra\Auditable\AuditableWithDeletesTrait;
 
 class BaseModal extends Model
@@ -14,17 +15,17 @@ class BaseModal extends Model
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by', 'user_id');
+        return $this->belongsTo(User::class, 'created_by', 'id');
     }
 
     public function updater(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'updated_by', 'user_id');
+        return $this->belongsTo(User::class, 'updated_by', 'id');
     }
 
     public function deleter(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'deleted_by', 'user_id');
+        return $this->belongsTo(User::class, 'deleted_by', 'id');
     }
 
     public function scopeLatest($query)
