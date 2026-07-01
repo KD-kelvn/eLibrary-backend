@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Storage;
 
 class FilesBase64Repository
 {
-    public function saveToStorage($base64, $path, $fileName)
+    public function saveToStorage(string $base64, string $path, string $fileName)
     {
         $dataType = explode(';', $base64)[0];
         $fileString = explode(',', $base64)[1];
@@ -27,7 +27,7 @@ class FilesBase64Repository
         ];
     }
 
-    public function encodeToBase64($filePath)
+    public function encodeToBase64(string $filePath)
     {
         $file = file_get_contents($this->getFilePath($filePath));
         $base64 = base64_encode($file);
