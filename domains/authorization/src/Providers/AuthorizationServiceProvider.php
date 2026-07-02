@@ -22,7 +22,7 @@ class AuthorizationServiceProvider extends ServiceProvider
 
         Route::middleware('api')
             ->prefix('api/authorization')
-            ->group(__DIR__.'/../../routes/authorization-routes.php');
+            ->group(__DIR__.'/../../api-routes/authorization-routes.php');
     }
 
     protected function registerPolicies(): void
