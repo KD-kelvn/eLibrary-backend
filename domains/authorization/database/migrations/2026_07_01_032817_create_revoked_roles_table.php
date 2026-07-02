@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('revoked_roles', function (Blueprint $table) {
+        Schema::create('auth.revoked_roles', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_role_id');
             $table->unsignedBigInteger('revoked_by');
@@ -21,6 +21,6 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::dropIfExists('revoked_roles');
+        Schema::dropIfExists('auth.revoked_roles');
     }
 };
