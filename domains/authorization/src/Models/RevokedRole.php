@@ -8,6 +8,8 @@ use Modules\Authentication\Models\User;
 
 class RevokedRole extends BaseModelWithAudits
 {
+    protected $table = 'auth.revoked_roles';
+
     protected $fillable = [
         'user_role_id',
         'revoked_by',

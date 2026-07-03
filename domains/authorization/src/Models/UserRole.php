@@ -3,13 +3,15 @@
 namespace Modules\Authorization\Models;
 
 use App\Models\BaseModelWithAudits;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Builder;
 use Modules\Authentication\Models\User;
 
 class UserRole extends BaseModelWithAudits
 {
+    protected $table = 'auth.user_roles';
+
     protected $fillable = [
         'user_id',
         'role_id',
@@ -56,7 +58,8 @@ class UserRole extends BaseModelWithAudits
     {
         return $query
             ->where(function (Builder $builder) {
-                $builder->whereNull('expires_at')
+                $builder
+                    ->whereNull('expires_at')
                     ->orWhereDate('expires_at', '>=', now());
             })
             ->whereDoesntHave('revokedRole');
@@ -65,7 +68,8 @@ class UserRole extends BaseModelWithAudits
     public function scopeExpired(Builder $query): Builder
     {
         return $query->where(function (Builder $builder) {
-            $builder->whereDate('expires_at', '<', now())
+            $builder
+                ->whereDate('expires_at', '<', now())
                 ->orWhereHas('revokedRole');
         });
     }

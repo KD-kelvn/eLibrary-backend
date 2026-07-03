@@ -9,6 +9,8 @@ use Modules\Authorization\Enums\RoleStatusEnum;
 
 class Role extends BaseModelWithAudits
 {
+    protected $table = 'auth.roles';
+
     protected $fillable = [
         'name',
         'description',
