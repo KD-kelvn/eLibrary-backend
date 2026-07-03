@@ -16,7 +16,9 @@ class UpdateRoleRequest extends FormRequest
         return $role && $this->user()?->can('update', $role);
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     public function rules(): array
     {
         $roleId = $this->route('role');
@@ -30,8 +32,7 @@ class UpdateRoleRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                'alpha_dash',
-                Rule::unique('roles', 'code')->ignore($roleId),
+                'alpha_dash'
             ],
         ];
     }

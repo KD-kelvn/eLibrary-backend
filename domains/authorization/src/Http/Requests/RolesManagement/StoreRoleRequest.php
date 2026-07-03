@@ -14,14 +14,16 @@ class StoreRoleRequest extends FormRequest
         return $this->user()?->can('create', Role::class) ?? false;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     public function rules(): array
     {
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['nullable', Rule::enum(RoleStatusEnum::class)],
-            'code' => ['required', 'string', 'max:100', 'alpha_dash', 'unique:roles,code'],
+            'code' => ['required', 'string', 'max:100', 'alpha_dash'],
         ];
     }
 }
