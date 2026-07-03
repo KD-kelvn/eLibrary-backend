@@ -26,8 +26,8 @@ class SystemPageResource extends JsonResource
             'rolesCount' => $this->whenCounted('systemPageRoles'),
             'roles' => RoleSummaryResource::collection($this->whenLoaded('roles')),
             'pageRoles' => SystemPageRoleResource::collection($this->whenLoaded('systemPageRoles')),
-            'createdAt' => $this->created_at?->toIso8601String(),
-            'updatedAt' => $this->updated_at?->toIso8601String(),
+            'createdAt' => $this->whenNotNull($this->created_at),
+            'updatedAt' => $this->whenNotNull($this->updated_at),
         ];
     }
 }

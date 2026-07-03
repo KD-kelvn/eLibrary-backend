@@ -27,8 +27,8 @@ class SystemModuleResource extends JsonResource
             'rolesCount' => $this->whenCounted('systemModuleRoles'),
             'roles' => RoleSummaryResource::collection($this->whenLoaded('roles')),
             'moduleRoles' => SystemModuleRoleResource::collection($this->whenLoaded('systemModuleRoles')),
-            'createdAt' => $this->created_at?->toIso8601String(),
-            'updatedAt' => $this->updated_at?->toIso8601String(),
+            'createdAt' => $this->whenNotNull($this->created_at),
+            'updatedAt' => $this->whenNotNull($this->updated_at),
         ];
     }
 }

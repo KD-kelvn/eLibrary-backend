@@ -31,11 +31,11 @@ class UserRoleResource extends JsonResource
                 'user' => UserSummaryResource::make($this->whenLoaded('assignedBy'))
             ],
             'expiresAt' => $this->expires_at?->toDateString(),
-            'assignedAt' => $this->assigned_at?->toIso8601String(),
+            'assignedAt' => $this->whenNotNull($this->assigned_at),
             'isActive' => $this->isActive(),
             'revocation' => RevokedRoleResource::make($this->whenLoaded('revokedRole')),
-            'createdAt' => $this->created_at?->toIso8601String(),
-            'updatedAt' => $this->updated_at?->toIso8601String(),
+            'createdAt' => $this->whenNotNull($this->created_at),
+            'updatedAt' => $this->whenNotNull($this->updated_at),
         ];
     }
 }

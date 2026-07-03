@@ -20,10 +20,8 @@ class SystemModuleRoleResource extends JsonResource
             'id' => $this->id,
             'systemModuleId' => $this->system_module_id,
             'roleId' => $this->role_id,
-            'systemModule' => SystemModuleResource::make($this->whenLoaded('systemModule')),
-            'role' => RoleSummaryResource::make($this->whenLoaded('role')),
-            'createdAt' => $this->created_at?->toIso8601String(),
-            'updatedAt' => $this->updated_at?->toIso8601String(),
+            'createdAt' => $this->whenNotNull($this->created_at),
+            'updatedAt' => $this->whenNotNull($this->updated_at),
         ];
     }
 }
