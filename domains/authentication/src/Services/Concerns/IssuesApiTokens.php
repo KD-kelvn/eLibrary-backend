@@ -6,10 +6,12 @@ use Modules\Authentication\Models\User;
 
 trait IssuesApiTokens
 {
-    /** @return array{user: User, access_token: string, token_type: string} */
+    /**
+     * @return array{user: User, access_token: string, token_type: string}
+     */
     protected function issueToken(User $user, ?string $deviceName = null): array
     {
-        $token = $user->createToken($deviceName ?? 'api-token')->plainTextToken;
+        $token = $user->createToken($deviceName ?? 'api-token', ['*'], now()->addHours(1))->plainTextToken;
 
         return [
             'user' => $user,
