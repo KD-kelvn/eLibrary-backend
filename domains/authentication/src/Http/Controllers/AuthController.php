@@ -6,14 +6,15 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Authentication\Enums\OneTimeTokenPurpose;
+use Modules\Authentication\Exceptions\AuthenticationException;
 use Modules\Authentication\Http\Controllers\Concerns\RespondsWithJson;
 use Modules\Authentication\Http\Requests\LoginRequest;
 use Modules\Authentication\Http\Requests\RegisterRequest;
 use Modules\Authentication\Http\Requests\RequestOtpRequest;
 use Modules\Authentication\Http\Requests\VerifyOtpRequest;
 use Modules\Authentication\Http\Resources\AuthResource;
+use Modules\Authentication\Http\Resources\AuthenticatedUserResource;
 use Modules\Authentication\Http\Resources\OtpSentResource;
-use Modules\Authentication\Http\Resources\UserResource;
 use Modules\Authentication\Services\OneTimeTokenLoginService;
 use Modules\Authentication\Services\PasswordLoginService;
 use Modules\Authentication\Services\RegistrationService;
@@ -34,6 +35,8 @@ class AuthController extends Controller
             $result = $this->registration->register($request->validated());
 
             return $this->successResponse(AuthResource::make($result), 'Account created.', 201);
+        } catch (AuthenticationException $e) {
+            return $this->failResponse(null, $e->getMessage(), $e->getCode() ?: 422);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
@@ -45,6 +48,8 @@ class AuthController extends Controller
             $result = $this->passwordLogin->login($request->validated());
 
             return $this->successResponse(AuthResource::make($result), 'Signed in successfully.');
+        } catch (AuthenticationException $e) {
+            return $this->failResponse(null, $e->getMessage(), $e->getCode() ?: 401);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
@@ -60,6 +65,8 @@ class AuthController extends Controller
             $result = $this->otpLogin->requestToken($payload);
 
             return $this->successResponse(OtpSentResource::make($result), 'One-time code sent.');
+        } catch (AuthenticationException $e) {
+            return $this->failResponse(null, $e->getMessage(), $e->getCode() ?: 422);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
@@ -74,6 +81,8 @@ class AuthController extends Controller
             $result = $this->otpLogin->login($payload);
 
             return $this->successResponse(AuthResource::make($result), 'Signed in successfully.');
+        } catch (AuthenticationException $e) {
+            return $this->failResponse(null, $e->getMessage(), $e->getCode() ?: 401);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
@@ -83,7 +92,7 @@ class AuthController extends Controller
     {
         try {
             return $this->success(
-                UserResource::make($request->user()->load('profile')),
+                AuthenticatedUserResource::make($request->user()->load('profile')),
                 '',
             );
         } catch (\Exception $e) {

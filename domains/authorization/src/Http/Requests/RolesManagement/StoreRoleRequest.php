@@ -23,7 +23,13 @@ class StoreRoleRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['nullable', Rule::enum(RoleStatusEnum::class)],
-            'code' => ['required', 'string', 'max:100', 'alpha_dash'],
+            'code' => [
+                'required',
+                'string',
+                'max:100',
+                'alpha_dash',
+                Rule::unique('auth.roles', 'code'),
+            ],
         ];
     }
 }

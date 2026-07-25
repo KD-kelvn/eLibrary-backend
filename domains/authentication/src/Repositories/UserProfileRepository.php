@@ -16,4 +16,12 @@ class UserProfileRepository
             ...$attributes,
         ]);
     }
+
+    public function updateOrCreateForUser(int $userId, array $attributes): UserProfile
+    {
+        return UserProfile::query()->updateOrCreate(
+            ['user_id' => $userId],
+            $attributes,
+        );
+    }
 }

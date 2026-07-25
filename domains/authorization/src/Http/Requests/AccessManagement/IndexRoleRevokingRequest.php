@@ -9,7 +9,7 @@ class IndexRoleRevokingRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        return $this->user()?->can('viewAny', \Modules\Authorization\Models\RevokedRole::class) ?? false;
     }
 
     /** @return array<string, mixed> */
@@ -17,7 +17,7 @@ class IndexRoleRevokingRequest extends FormRequest
     {
         return [
             'user_id' => ['nullable', 'integer', 'exists:auth.users,id'],
-            'role_id' => ['nullable', 'integer', 'exists:roles,id'],
+            'role_id' => ['nullable', 'integer', 'exists:auth.roles,id'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }

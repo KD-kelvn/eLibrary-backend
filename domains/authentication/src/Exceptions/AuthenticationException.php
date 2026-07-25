@@ -35,4 +35,9 @@ class AuthenticationException extends RuntimeException
     {
         return new self("The requested channel [{$via}] is not supported for this account.", 422);
     }
+
+    public static function accountBlocked(): self
+    {
+        return new self('This account has been blocked from using the system.', 403);
+    }
 }

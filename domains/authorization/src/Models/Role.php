@@ -5,6 +5,7 @@ namespace Modules\Authorization\Models;
 use App\Models\BaseModelWithAudits;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Modules\Authorization\Enums\RoleStatusEnum;
 
 class Role extends BaseModelWithAudits
@@ -48,6 +49,26 @@ class Role extends BaseModelWithAudits
             UserRole::class,
             'role_id',
             'user_role_id',
+        );
+    }
+
+    public function menus(): BelongsToMany
+    {
+        return $this->belongsToMany(Menu::class, 'auth.menu_roles', 'role_id', 'menu_id');
+    }
+
+    public function menuItems(): BelongsToMany
+    {
+        return $this->belongsToMany(MenuItem::class, 'auth.menu_item_roles', 'role_id', 'menu_item_id');
+    }
+
+    public function systemActions(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            SystemAction::class,
+            'auth.system_action_roles',
+            'role_id',
+            'system_action_id',
         );
     }
 }

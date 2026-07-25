@@ -13,6 +13,7 @@ class RolesRepository
     public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         return $this->model->newQuery()
+            ->withCount(['userRoles', 'activeUserRoles'])
             ->when(
                 filled($filters['search'] ?? null),
                 fn ($query) => $query->where(function ($builder) use ($filters) {

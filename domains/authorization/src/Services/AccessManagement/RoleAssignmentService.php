@@ -2,6 +2,7 @@
 
 namespace Modules\Authorization\Services\AccessManagement;
 
+use App\Support\AdminActivity;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\Authorization\Exceptions\AuthorizationException;
 use Modules\Authorization\Models\UserRole;
@@ -35,13 +36,25 @@ class RoleAssignmentService
             );
         }
 
-        return $this->repository->create([
+        $assignment = $this->repository->create([
             'user_id' => $data['user_id'],
             'role_id' => $data['role_id'],
             'assigned_by' => $assignedBy,
             'expires_at' => $data['expires_at'] ?? null,
             'assigned_at' => now(),
         ]);
+
+        AdminActivity::log(
+            'Role assigned to user',
+            $assignment,
+            [
+                'user_id' => $assignment->user_id,
+                'role_id' => $assignment->role_id,
+            ],
+            event: 'assigned',
+        );
+
+        return $assignment;
     }
 
     public function update(int $id, array $data): UserRole
@@ -73,6 +86,17 @@ class RoleAssignmentService
     public function destroy(int $id): void
     {
         $assignment = $this->findOrFail($id);
+
+        AdminActivity::log(
+            'Role assignment deleted',
+            $assignment,
+            [
+                'user_id' => $assignment->user_id,
+                'role_id' => $assignment->role_id,
+            ],
+            event: 'deleted',
+        );
+
         $this->repository->delete($assignment);
     }
 

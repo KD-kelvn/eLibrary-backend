@@ -7,6 +7,8 @@ use Modules\Authentication\Exceptions\AuthenticationException;
 use Modules\Authentication\Repositories\UserProfileRepository;
 use Modules\Authentication\Repositories\UserRepository;
 use Modules\Authentication\Services\Concerns\IssuesApiTokens;
+use Modules\Authorization\Models\Role;
+use Modules\Authorization\Models\UserRole;
 
 class RegistrationService
 {
@@ -35,6 +37,20 @@ class RegistrationService
                 'gender' => $data['gender'] ?? null,
                 'dob' => $data['dob'] ?? null,
             ]);
+
+            $studentRole = Role::query()
+                ->where('code', 'student')
+                ->where('status', 'active')
+                ->first();
+
+            if ($studentRole) {
+                UserRole::query()->create([
+                    'user_id' => $user->id,
+                    'role_id' => $studentRole->id,
+                    'assigned_by' => $user->id,
+                    'assigned_at' => now(),
+                ]);
+            }
 
             return $user->load('profile');
         });

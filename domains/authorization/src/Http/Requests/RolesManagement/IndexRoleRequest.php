@@ -11,7 +11,7 @@ class IndexRoleRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        return $this->user()?->can('viewAny', Role::class) ?? false;
     }
 
     /** @return array<string, mixed> */

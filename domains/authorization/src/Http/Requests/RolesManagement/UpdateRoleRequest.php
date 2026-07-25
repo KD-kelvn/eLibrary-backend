@@ -32,7 +32,8 @@ class UpdateRoleRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                'alpha_dash'
+                'alpha_dash',
+                Rule::unique('auth.roles', 'code')->ignore($roleId),
             ],
         ];
     }

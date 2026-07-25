@@ -11,6 +11,7 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('system_page_id');
             $table->unsignedBigInteger('role_id');
+            $table->auditableWithDeletes();
             $table->timestamps();
             $table->softDeletes();
 

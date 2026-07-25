@@ -16,7 +16,7 @@ class StoreRoleRevokingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_role_id' => ['required', 'integer', 'exists:user_roles,id'],
+            'user_role_id' => ['required', 'integer', 'exists:auth.user_roles,id'],
             'reason' => ['nullable', 'string'],
         ];
     }

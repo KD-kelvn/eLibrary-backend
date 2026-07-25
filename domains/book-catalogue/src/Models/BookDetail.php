@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Modules\BookCatalogue\Enums\BookTypeEnum;
+use Modules\BookReading\Models\ReadingHistory;
 
 class BookDetail extends BaseModelWithAudits
 {
@@ -92,6 +93,11 @@ class BookDetail extends BaseModelWithAudits
     public function isPhysical(): bool
     {
         return $this->type_code === BookTypeEnum::Physical;
+    }
+
+    public function readingHistories(): HasMany
+    {
+        return $this->hasMany(ReadingHistory::class, 'book_detail_id');
     }
 
     public function isDigital(): bool

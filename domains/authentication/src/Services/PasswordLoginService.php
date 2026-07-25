@@ -26,6 +26,10 @@ class PasswordLoginService
             throw AuthenticationException::invalidCredentials();
         }
 
+        if ($user->is_blocked) {
+            throw AuthenticationException::accountBlocked();
+        }
+
         return $this->issueToken($user->load('profile'), $data['device_name'] ?? null);
     }
 }

@@ -12,26 +12,26 @@ class UserRolePolicy
 
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 
     public function view(User $user, UserRole $assignment): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 
     public function update(User $user, UserRole $assignment): bool
     {
-        return ! $assignment->revokedRole()->exists();
+        return $user->hasActiveRole('admin') && ! $assignment->revokedRole()->exists();
     }
 
     public function delete(User $user, UserRole $assignment): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 }

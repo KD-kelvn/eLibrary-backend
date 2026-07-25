@@ -14,6 +14,21 @@ class RoleAssignmentRepository
         return $this->model->newQuery()
             ->with(['user.profile', 'role', 'assignedBy.profile', 'revokedRole'])
             ->when(
+                filled($filters['search'] ?? null),
+                fn ($query) => $query->where(function ($builder) use ($filters) {
+                    $search = $filters['search'];
+                    $builder
+                        ->whereHas('user', fn ($user) => $user
+                            ->where('username', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%")
+                            ->orWhereHas('profile', fn ($profile) => $profile
+                                ->where('fullname', 'like', "%{$search}%")))
+                        ->orWhereHas('role', fn ($role) => $role
+                            ->where('name', 'like', "%{$search}%")
+                            ->orWhere('code', 'like', "%{$search}%"));
+                }),
+            )
+            ->when(
                 ($filters['status'] ?? 'all') === 'active',
                 fn ($query) => $query->active(),
             )

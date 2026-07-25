@@ -12,16 +12,16 @@ class RevokedRolePolicy
 
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 
     public function view(User $user, RevokedRole $revokedRole): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 }

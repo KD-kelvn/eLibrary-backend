@@ -34,6 +34,10 @@ class OneTimeTokenLoginService
 
         $user = $this->resolveUserForOneTimeTokenChannel($this->users, $data['identifier'], $via);
 
+        if ($user->is_blocked) {
+            throw AuthenticationException::accountBlocked();
+        }
+
         $this->tokens->revokeActiveForUser($user, $purpose);
 
         $plainToken = $this->generatePlainToken();
@@ -68,6 +72,11 @@ class OneTimeTokenLoginService
             : OneTimeTokenPurpose::Login;
 
         $user = $this->resolveUserByIdentifier($this->users, $data['identifier']);
+
+        if ($user->is_blocked) {
+            throw AuthenticationException::accountBlocked();
+        }
+
         $token = $this->findValidToken($user, $data['token'], $purpose);
 
         $this->tokens->markAsUsed($token);

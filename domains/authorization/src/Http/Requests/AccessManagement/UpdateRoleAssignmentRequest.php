@@ -19,7 +19,7 @@ class UpdateRoleAssignmentRequest extends FormRequest
     {
         return [
             'user_id' => ['sometimes', 'required', 'integer', 'exists:auth.users,id'],
-            'role_id' => ['sometimes', 'required', 'integer', 'exists:roles,id'],
+            'role_id' => ['sometimes', 'required', 'integer', 'exists:auth.roles,id'],
             'expires_at' => ['sometimes', 'nullable', 'date'],
         ];
     }

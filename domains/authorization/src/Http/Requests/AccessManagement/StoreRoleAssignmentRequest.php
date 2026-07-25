@@ -17,7 +17,7 @@ class StoreRoleAssignmentRequest extends FormRequest
     {
         return [
             'user_id' => ['required', 'integer', 'exists:auth.users,id'],
-            'role_id' => ['required', 'integer', 'exists:roles,id'],
+            'role_id' => ['required', 'integer', 'exists:auth.roles,id'],
             'expires_at' => ['nullable', 'date', 'after_or_equal:today'],
         ];
     }

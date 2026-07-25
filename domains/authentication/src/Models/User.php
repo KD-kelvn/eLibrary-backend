@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Modules\Authorization\Models\UserRole;
+use Modules\BookReading\Models\ReadingHistory;
 use Yajra\Auditable\AuditableWithDeletesTrait;
 
 class User extends Authenticatable
@@ -29,6 +31,7 @@ class User extends Authenticatable
         'email',
         'password',
         'remember_token',
+        'is_blocked',
     ];
 
     /**
@@ -51,6 +54,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_blocked' => 'boolean',
         ];
     }
 
@@ -62,5 +66,29 @@ class User extends Authenticatable
     public function oneTimeTokens(): HasMany
     {
         return $this->hasMany(OneTimeToken::class);
+    }
+
+    public function userRoles(): HasMany
+    {
+        return $this->hasMany(UserRole::class, 'user_id');
+    }
+
+    public function activeUserRoles(): HasMany
+    {
+        return $this->userRoles()->active();
+    }
+
+    public function hasActiveRole(string ...$codes): bool
+    {
+        return $this->activeUserRoles()
+            ->whereHas('role', fn ($query) => $query
+                ->whereIn('code', $codes)
+                ->where('status', 'active'))
+            ->exists();
+    }
+
+    public function readingHistories(): HasMany
+    {
+        return $this->hasMany(ReadingHistory::class, 'user_id');
     }
 }

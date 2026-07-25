@@ -2,6 +2,7 @@
 
 namespace Modules\Authorization\Services\AccessManagement;
 
+use App\Support\AdminActivity;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Modules\Authorization\Exceptions\AuthorizationException;
@@ -49,7 +50,7 @@ class RoleRevokingService
         }
 
         return DB::transaction(function () use ($data, $revokedBy, $assignment) {
-            return $this->repository->create([
+            $revocation = $this->repository->create([
                 'user_role_id' => $assignment->id,
                 'revoked_by' => $revokedBy,
                 'revoked_at' => now(),
@@ -60,6 +61,18 @@ class RoleRevokingService
                 'userRole.role',
                 'userRole.assignedBy.profile',
             ]);
+
+            AdminActivity::log(
+                'Role assignment revoked',
+                $revocation,
+                [
+                    'user_role_id' => $assignment->id,
+                    'reason' => $data['reason'] ?? null,
+                ],
+                event: 'revoked',
+            );
+
+            return $revocation;
         });
     }
 }

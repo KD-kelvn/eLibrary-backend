@@ -26,6 +26,11 @@ class SystemModule extends BaseModelWithAudits
 
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class, SystemModuleRole::class, 'system_module_id', 'role_id');
+        return $this->belongsToMany(
+            Role::class,
+            'auth.system_module_roles',
+            'system_module_id',
+            'role_id',
+        );
     }
 }

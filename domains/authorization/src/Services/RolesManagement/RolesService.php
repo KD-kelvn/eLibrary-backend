@@ -2,6 +2,7 @@
 
 namespace Modules\Authorization\Services\RolesManagement;
 
+use App\Support\AdminActivity;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\Authorization\Enums\RoleStatusEnum;
 use Modules\Authorization\Exceptions\AuthorizationException;
@@ -30,24 +31,37 @@ class RolesService
 
     public function store(array $data): Role
     {
-        return $this->repository->create([
+        $role = $this->repository->create([
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'status' => $data['status'] ?? RoleStatusEnum::Inactive->value,
             'code' => $data['code'],
         ]);
+
+        AdminActivity::log('Role created', $role, ['code' => $role->code], event: 'created');
+
+        return $role;
     }
 
     public function update(int $id, array $data): Role
     {
         $role = $this->findOrFail($id);
 
-        return $this->repository->update($role, collect($data)->only([
+        $role = $this->repository->update($role, collect($data)->only([
             'name',
             'description',
             'status',
             'code',
         ])->all());
+
+        AdminActivity::log(
+            'Role updated',
+            $role,
+            ['changed' => array_keys($data), 'status' => $role->status?->value],
+            event: 'updated',
+        );
+
+        return $role;
     }
 
     public function destroy(int $id): void
@@ -63,6 +77,7 @@ class RolesService
             );
         }
 
+        AdminActivity::log('Role deleted', $role, ['code' => $role->code], event: 'deleted');
         $this->repository->delete($role);
     }
 

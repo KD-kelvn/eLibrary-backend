@@ -17,7 +17,7 @@ class StoreSystemPageRoleRequest extends FormRequest
     {
         return [
             'system_page_id' => ['required', 'integer', 'exists:auth.system_pages,id'],
-            'role_id' => ['required', 'integer', 'exists:roles,id'],
+            'role_id' => ['required', 'integer', 'exists:auth.roles,id'],
         ];
     }
 }

@@ -10,16 +10,17 @@ class IndexRoleAssignmentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        return $this->user()?->can('viewAny', UserRole::class) ?? false;
     }
 
     /** @return array<string, mixed> */
     public function rules(): array
     {
         return [
+            'search' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', Rule::in(['all', 'active', 'expired'])],
             'user_id' => ['nullable', 'integer', 'exists:auth.users,id'],
-            'role_id' => ['nullable', 'integer', 'exists:roles,id'],
+            'role_id' => ['nullable', 'integer', 'exists:auth.roles,id'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }

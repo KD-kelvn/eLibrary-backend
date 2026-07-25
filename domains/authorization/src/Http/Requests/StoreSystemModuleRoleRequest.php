@@ -17,7 +17,7 @@ class StoreSystemModuleRoleRequest extends FormRequest
     {
         return [
             'system_module_id' => ['required', 'integer', 'exists:auth.system_modules,id'],
-            'role_id' => ['required', 'integer', 'exists:roles,id'],
+            'role_id' => ['required', 'integer', 'exists:auth.roles,id'],
         ];
     }
 }

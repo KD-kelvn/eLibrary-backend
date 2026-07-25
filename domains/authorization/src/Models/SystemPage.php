@@ -18,6 +18,13 @@ class SystemPage extends BaseModelWithAudits
         'is_public',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'is_public' => 'boolean',
+        ];
+    }
+
     public function systemPageRoles(): HasMany
     {
         return $this->hasMany(SystemPageRole::class, 'system_page_id');
@@ -25,6 +32,11 @@ class SystemPage extends BaseModelWithAudits
 
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class, SystemPageRole::class, 'system_page_id', 'role_id');
+        return $this->belongsToMany(
+            Role::class,
+            'auth.system_page_roles',
+            'system_page_id',
+            'role_id',
+        );
     }
 }
