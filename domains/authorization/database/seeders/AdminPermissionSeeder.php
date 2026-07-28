@@ -36,6 +36,7 @@ class AdminPermissionSeeder extends Seeder
                     ['name' => 'System roles', 'code' => 'system-roles', 'route' => '/admin/access/roles', 'sort_order' => 10],
                     ['name' => 'System users', 'code' => 'system-users', 'route' => '/admin/access/users', 'sort_order' => 20],
                     ['name' => 'Role assignment', 'code' => 'role-assignment', 'route' => '/admin/access/role-assignments', 'sort_order' => 30],
+                    ['name' => 'Sessions', 'code' => 'active-sessions', 'route' => '/admin/access/sessions', 'sort_order' => 40],
                 ],
             ],
             [
@@ -73,6 +74,7 @@ class AdminPermissionSeeder extends Seeder
                 'sort_order' => 60,
                 'items' => [
                     ['name' => 'Appearance', 'code' => 'appearance', 'route' => '/admin/settings/appearance', 'sort_order' => 10],
+                    ['name' => 'Login slider', 'code' => 'login-slider', 'route' => '/admin/settings/login-slider', 'sort_order' => 20],
                 ],
             ],
         ];
@@ -119,6 +121,8 @@ class AdminPermissionSeeder extends Seeder
             ['name' => 'Assign roles', 'code' => 'role-assignments.create', 'item' => 'role-assignment', 'type' => 'create'],
             ['name' => 'Update role assignments', 'code' => 'role-assignments.update', 'item' => 'role-assignment', 'type' => 'update'],
             ['name' => 'Revoke role assignments', 'code' => 'role-assignments.revoke', 'item' => 'role-assignment', 'type' => 'delete'],
+            ['name' => 'View sessions', 'code' => 'sessions.view', 'item' => 'active-sessions', 'type' => 'view'],
+            ['name' => 'Revoke sessions', 'code' => 'sessions.revoke', 'item' => 'active-sessions', 'type' => 'delete'],
             ['name' => 'Create menus', 'code' => 'menus.create', 'item' => 'system-menu', 'type' => 'create'],
             ['name' => 'Update menus', 'code' => 'menus.update', 'item' => 'system-menu', 'type' => 'update'],
             ['name' => 'Delete menus', 'code' => 'menus.delete', 'item' => 'system-menu', 'type' => 'delete'],
@@ -127,6 +131,9 @@ class AdminPermissionSeeder extends Seeder
             ['name' => 'Delete actions', 'code' => 'actions.delete', 'item' => 'system-actions', 'type' => 'delete'],
             ['name' => 'Export readings', 'code' => 'readings.export', 'item' => 'readings-history', 'type' => 'export'],
             ['name' => 'Update appearance', 'code' => 'appearance.update', 'item' => 'appearance', 'type' => 'update'],
+            ['name' => 'Create login slides', 'code' => 'login-slides.create', 'item' => 'login-slider', 'type' => 'create'],
+            ['name' => 'Update login slides', 'code' => 'login-slides.update', 'item' => 'login-slider', 'type' => 'update'],
+            ['name' => 'Delete login slides', 'code' => 'login-slides.delete', 'item' => 'login-slider', 'type' => 'delete'],
         ] as $definition) {
             $action = SystemAction::query()->updateOrCreate(
                 ['code' => $definition['code']],

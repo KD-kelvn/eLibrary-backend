@@ -6,8 +6,11 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Sanctum\Sanctum;
 use Modules\Authentication\Notifications\Channels\LogSmsChannel;
+use Modules\Authentication\Models\PersonalAccessToken;
 use Modules\Authentication\Models\User;
+use Modules\Authentication\Policies\PersonalAccessTokenPolicy;
 use Modules\Authentication\Policies\UserPolicy;
 
 class AuthenticationServiceProvider extends ServiceProvider
@@ -24,8 +27,11 @@ class AuthenticationServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
 
+        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+
         Notification::extend('log_sms', fn () => new LogSmsChannel);
         Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(PersonalAccessToken::class, PersonalAccessTokenPolicy::class);
 
         Route::middleware('api')
             ->prefix('api')

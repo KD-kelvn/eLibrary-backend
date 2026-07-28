@@ -6,7 +6,9 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Modules\Settings\Models\Branding;
+use Modules\Settings\Models\LoginSlide;
 use Modules\Settings\Policies\BrandingPolicy;
+use Modules\Settings\Policies\LoginSlidePolicy;
 
 class SettingsServiceProvider extends ServiceProvider
 {
@@ -17,6 +19,7 @@ class SettingsServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
 
         Gate::policy(Branding::class, BrandingPolicy::class);
+        Gate::policy(LoginSlide::class, LoginSlidePolicy::class);
 
         Route::middleware('api')
             ->prefix('api/settings')

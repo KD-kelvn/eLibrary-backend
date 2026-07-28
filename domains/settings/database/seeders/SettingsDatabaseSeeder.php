@@ -10,6 +10,7 @@ class SettingsDatabaseSeeder extends Seeder
     {
         $this->call([
             BrandingSeeder::class,
+            LoginSlideSeeder::class,
         ]);
     }
 }

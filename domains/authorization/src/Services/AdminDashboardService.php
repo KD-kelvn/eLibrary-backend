@@ -3,7 +3,7 @@
 namespace Modules\Authorization\Services;
 
 use Illuminate\Support\Facades\DB;
-use Laravel\Sanctum\PersonalAccessToken;
+use Modules\Authentication\Models\PersonalAccessToken;
 use Modules\Authentication\Models\User;
 use Modules\Authorization\Models\UserRole;
 use Spatie\Activitylog\Models\Activity;
@@ -27,10 +27,13 @@ class AdminDashboardService
             ],
             'sessions' => [
                 'totalTokens' => PersonalAccessToken::query()->count(),
+                'activeTokens' => PersonalAccessToken::query()->active()->count(),
                 'activeToday' => PersonalAccessToken::query()
+                    ->active()
                     ->where('last_used_at', '>=', now()->startOfDay())
                     ->count(),
                 'activeThisWeek' => PersonalAccessToken::query()
+                    ->active()
                     ->where('last_used_at', '>=', now()->startOfWeek())
                     ->count(),
                 'lastSevenDays' => $this->sessionActivityLastSevenDays(),
