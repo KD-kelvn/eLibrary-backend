@@ -64,7 +64,7 @@ class PenaltyBatchService
     /**
      * 00:10 job — generate today's penalty row for each PENDING batch.
      */
-    public function generateDailyPenalties(?\DateTimeInterface $forDate = null): int
+    public function generateDailyPenalties(\DateTimeInterface|string|null $forDate = null): int
     {
         $date = ($forDate ? \Illuminate\Support\Carbon::parse($forDate) : now())->toDateString();
         $created = 0;

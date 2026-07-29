@@ -73,6 +73,18 @@ return [
             'replace_placeholders' => true,
         ],
 
+        /*
+        | Dedicated channel for scheduled Artisan jobs (penalty batches, etc.).
+        | Does not write to the default laravel.log stack.
+        */
+        'scheduler' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/scheduler.log'),
+            'level' => env('LOG_SCHEDULER_LEVEL', env('LOG_LEVEL', 'debug')),
+            'days' => env('LOG_SCHEDULER_DAYS', 30),
+            'replace_placeholders' => true,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

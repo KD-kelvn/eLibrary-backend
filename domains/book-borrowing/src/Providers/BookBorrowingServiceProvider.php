@@ -2,7 +2,6 @@
 
 namespace Modules\BookBorrowing\Providers;
 
-use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -28,7 +27,6 @@ class BookBorrowingServiceProvider extends ServiceProvider
         $this->registerPolicies();
         $this->registerRoutes();
         $this->registerCommands();
-        $this->registerSchedule();
     }
 
     protected function registerPolicies(): void
@@ -54,20 +52,5 @@ class BookBorrowingServiceProvider extends ServiceProvider
                 GenerateDailyPenaltiesCommand::class,
             ]);
         }
-    }
-
-    protected function registerSchedule(): void
-    {
-        $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {
-            $schedule->command('borrowing:create-penalty-batches')
-                ->dailyAt('00:00')
-                ->name('borrowing-create-penalty-batches')
-                ->withoutOverlapping();
-
-            $schedule->command('borrowing:generate-daily-penalties')
-                ->dailyAt('00:10')
-                ->name('borrowing-generate-daily-penalties')
-                ->withoutOverlapping();
-        });
     }
 }
