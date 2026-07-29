@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Modules\Authorization\Database\Seeders\AuthorizationDatabaseSeeder;
+use Modules\BookBorrowing\Database\Seeders\BookBorrowingDatabaseSeeder;
 use Modules\Settings\Database\Seeders\SettingsDatabaseSeeder;
 
 class DatabaseSeeder extends Seeder
@@ -19,6 +20,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AuthorizationDatabaseSeeder::class,
             SettingsDatabaseSeeder::class,
+            BookBorrowingDatabaseSeeder::class,
         ]);
     }
 }
