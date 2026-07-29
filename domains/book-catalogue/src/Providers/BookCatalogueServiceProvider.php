@@ -5,10 +5,12 @@ namespace Modules\BookCatalogue\Providers;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Modules\BookCatalogue\Models\BookDetail;
 use Modules\BookCatalogue\Models\Category;
 use Modules\BookCatalogue\Models\Shelf;
 use Modules\BookCatalogue\Models\SubCategory;
 use Modules\BookCatalogue\Models\Tag;
+use Modules\BookCatalogue\Policies\BookDetailPolicy;
 use Modules\BookCatalogue\Policies\CategoryPolicy;
 use Modules\BookCatalogue\Policies\ShelfPolicy;
 use Modules\BookCatalogue\Policies\SubCategoryPolicy;
@@ -31,6 +33,7 @@ class BookCatalogueServiceProvider extends ServiceProvider
 
     protected function registerPolicies(): void
     {
+        Gate::policy(BookDetail::class, BookDetailPolicy::class);
         Gate::policy(Category::class, CategoryPolicy::class);
         Gate::policy(SubCategory::class, SubCategoryPolicy::class);
         Gate::policy(Tag::class, TagPolicy::class);

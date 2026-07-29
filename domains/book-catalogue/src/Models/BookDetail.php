@@ -64,7 +64,7 @@ class BookDetail extends BaseModelWithAudits
     {
         return $this->belongsToMany(
             Category::class,
-            BookHasCategory::class,
+            'book_catalog.book_has_categories',
             'book_detail_id',
             'category_id',
         )->withPivot('id');
@@ -74,7 +74,7 @@ class BookDetail extends BaseModelWithAudits
     {
         return $this->belongsToMany(
             SubCategory::class,
-            BookHasSubCategory::class,
+            'book_catalog.book_has_sub_categories',
             'book_detail_id',
             'sub_category_id',
         )->withPivot('id');
@@ -84,7 +84,7 @@ class BookDetail extends BaseModelWithAudits
     {
         return $this->belongsToMany(
             Tag::class,
-            BookHasTag::class,
+            'book_catalog.book_has_tags',
             'book_detail_id',
             'tag_id',
         )->withPivot('id');

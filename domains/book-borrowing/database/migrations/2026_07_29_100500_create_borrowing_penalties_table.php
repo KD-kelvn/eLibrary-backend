@@ -4,14 +4,16 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('book_borrowing.borrowing_penalties', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('penalty_batch_id');
             $table->unsignedBigInteger('borrowing_request_id');
-            $table->morphs('book_type');
+            $table->string('book_type');
+            $table->unsignedBigInteger('book_type_id');
             $table->date('penalty_date');
             $table->string('bill_no')->nullable();
             $table->string('control_no')->nullable();
@@ -30,6 +32,7 @@ return new class extends Migration {
                 ->references('id')
                 ->on('book_borrowing.borrowing_requests')
                 ->cascadeOnDelete();
+            $table->index(['book_type', 'book_type_id'], 'idx_brrw_pen_book_type');
             $table->index('penalty_date', 'idx_brrw_pen_penalty_date');
             $table->index('is_paid', 'idx_brrw_pen_is_paid');
             $table->index('bill_no', 'idx_brrw_pen_bill_no');

@@ -75,6 +75,8 @@ class AdminPermissionSeeder extends Seeder
                 'items' => [
                     ['name' => 'Appearance', 'code' => 'appearance', 'route' => '/admin/settings/appearance', 'sort_order' => 10],
                     ['name' => 'Login slider', 'code' => 'login-slider', 'route' => '/admin/settings/login-slider', 'sort_order' => 20],
+                    ['name' => 'Borrowing processes', 'code' => 'borrowing-processes', 'route' => '/admin/settings/borrowing-processes', 'sort_order' => 30],
+                    ['name' => 'Penalty policies', 'code' => 'penalty-policies', 'route' => '/admin/settings/penalty-policies', 'sort_order' => 40],
                 ],
             ],
         ];
@@ -134,6 +136,12 @@ class AdminPermissionSeeder extends Seeder
             ['name' => 'Create login slides', 'code' => 'login-slides.create', 'item' => 'login-slider', 'type' => 'create'],
             ['name' => 'Update login slides', 'code' => 'login-slides.update', 'item' => 'login-slider', 'type' => 'update'],
             ['name' => 'Delete login slides', 'code' => 'login-slides.delete', 'item' => 'login-slider', 'type' => 'delete'],
+            ['name' => 'Create borrowing processes', 'code' => 'borrowing-processes.create', 'item' => 'borrowing-processes', 'type' => 'create'],
+            ['name' => 'Update borrowing processes', 'code' => 'borrowing-processes.update', 'item' => 'borrowing-processes', 'type' => 'update'],
+            ['name' => 'Delete borrowing processes', 'code' => 'borrowing-processes.delete', 'item' => 'borrowing-processes', 'type' => 'delete'],
+            ['name' => 'Create penalty policies', 'code' => 'penalty-policies.create', 'item' => 'penalty-policies', 'type' => 'create'],
+            ['name' => 'Update penalty policies', 'code' => 'penalty-policies.update', 'item' => 'penalty-policies', 'type' => 'update'],
+            ['name' => 'Delete penalty policies', 'code' => 'penalty-policies.delete', 'item' => 'penalty-policies', 'type' => 'delete'],
         ] as $definition) {
             $action = SystemAction::query()->updateOrCreate(
                 ['code' => $definition['code']],

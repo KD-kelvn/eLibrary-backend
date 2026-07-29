@@ -46,7 +46,7 @@ class BorrowingPenalty extends BaseModelWithAudits
 
     public function bookType(): MorphTo
     {
-        return $this->morphTo();
+        return $this->morphTo(__FUNCTION__, 'book_type', 'book_type_id');
     }
 
     public function payments(): HasMany

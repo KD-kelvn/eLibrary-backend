@@ -11,6 +11,7 @@ class AuthorizationDatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             AdminPermissionSeeder::class,
+            LibrarianPermissionSeeder::class,
         ]);
     }
 }

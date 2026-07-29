@@ -10,6 +10,7 @@ class BookBorrowingDatabaseSeeder extends Seeder
     {
         $this->call([
             BorrowingProcessSeeder::class,
+            PenaltyPolicySeeder::class,
         ]);
     }
 }

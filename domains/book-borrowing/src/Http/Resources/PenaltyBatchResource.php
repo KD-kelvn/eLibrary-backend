@@ -19,8 +19,10 @@ class PenaltyBatchResource extends JsonResource
         return [
             'id' => $this->id,
             'borrowingRequestId' => $this->borrowing_request_id,
+            'borrowingRequest' => BorrowingRequestResource::make($this->whenLoaded('borrowingRequest')),
             'batchNo' => $this->batch_no,
             'costPerDay' => (float) $this->cost_per_day,
+            'penaltiesCount' => $this->whenCounted('penalties'),
             'status' => [
                 'value' => $this->status?->value,
                 'label' => $this->status?->label(),

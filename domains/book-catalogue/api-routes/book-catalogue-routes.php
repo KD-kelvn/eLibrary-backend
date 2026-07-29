@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Authentication\Http\Middleware\EnsureUserIsNotBlocked;
+use Modules\BookCatalogue\Http\Controllers\BookDetailController;
 use Modules\BookCatalogue\Http\Controllers\Reusables\CategoryController;
 use Modules\BookCatalogue\Http\Controllers\Reusables\ReusableOptionsController;
 use Modules\BookCatalogue\Http\Controllers\Reusables\ShelfController;
@@ -11,6 +12,7 @@ use Modules\BookCatalogue\Http\Controllers\Reusables\TagController;
 Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class])->group(function () {
     Route::get('reusable-options', [ReusableOptionsController::class, 'index']);
 
+    Route::apiResource('books', BookDetailController::class);
     Route::apiResource('categories', CategoryController::class);
     Route::apiResource('sub-categories', SubCategoryController::class);
     Route::apiResource('tags', TagController::class);
