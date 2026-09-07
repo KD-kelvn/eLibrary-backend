@@ -2,6 +2,7 @@
 
 namespace Modules\BookCatalogue\Http\Requests;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Modules\BookCatalogue\Enums\BookTypeEnum;
@@ -41,13 +42,13 @@ class UpdateBookDetailRequest extends FormRequest
             'physical_book.shelf_id' => [
                 'required_with:physical_book',
                 'integer',
-                'exists:book_catalog.shelves,id',
+                'exists:'.SchemaTable::forValidation('book_catalog.shelves').',id',
             ],
             'physical_book.code_no' => [
                 'required_with:physical_book',
                 'string',
                 'max:255',
-                Rule::unique('book_catalog.physical_books', 'code_no')->ignore($physicalBookId),
+                Rule::unique(SchemaTable::forValidation('book_catalog.physical_books'), 'code_no')->ignore($physicalBookId),
             ],
             'physical_book.copies' => ['required_with:physical_book', 'integer', 'min:1'],
             'digital_book' => ['sometimes', 'nullable', 'array'],
@@ -65,11 +66,11 @@ class UpdateBookDetailRequest extends FormRequest
             'digital_book.is_active' => ['sometimes', 'boolean'],
             'digital_book.checksum' => ['sometimes', 'nullable', 'string', 'max:64'],
             'category_ids' => ['sometimes', 'array'],
-            'category_ids.*' => ['integer', 'exists:book_catalog.categories,id'],
+            'category_ids.*' => ['integer', 'exists:'.SchemaTable::forValidation('book_catalog.categories').',id'],
             'sub_category_ids' => ['sometimes', 'array'],
-            'sub_category_ids.*' => ['integer', 'exists:book_catalog.sub_categories,id'],
+            'sub_category_ids.*' => ['integer', 'exists:'.SchemaTable::forValidation('book_catalog.sub_categories').',id'],
             'tag_ids' => ['sometimes', 'array'],
-            'tag_ids.*' => ['integer', 'exists:book_catalog.tags,id'],
+            'tag_ids.*' => ['integer', 'exists:'.SchemaTable::forValidation('book_catalog.tags').',id'],
         ];
     }
 }

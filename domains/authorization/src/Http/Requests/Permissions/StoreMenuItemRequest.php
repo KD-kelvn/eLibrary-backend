@@ -2,6 +2,7 @@
 
 namespace Modules\Authorization\Http\Requests\Permissions;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Modules\Authorization\Models\MenuItem;
@@ -16,10 +17,10 @@ class StoreMenuItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'menu_id' => ['required', 'integer', 'exists:auth.menus,id'],
+            'menu_id' => ['required', 'integer', 'exists:'.SchemaTable::forValidation('auth.menus').',id'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'code' => ['required', 'string', 'max:100', 'alpha_dash', Rule::unique('auth.menu_items', 'code')],
+            'code' => ['required', 'string', 'max:100', 'alpha_dash', Rule::unique(SchemaTable::forValidation('auth.menu_items'), 'code')],
             'route' => ['required', 'string', 'max:255'],
             'icon_code' => ['nullable', 'string', 'max:100'],
             'sort_order' => ['nullable', 'integer', 'min:0'],

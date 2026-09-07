@@ -2,6 +2,7 @@
 
 namespace Modules\BookCatalogue\Http\Requests\Reusables;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Modules\BookCatalogue\Models\Category;
@@ -29,7 +30,7 @@ class UpdateCategoryRequest extends FormRequest
                 'string',
                 'max:100',
                 'alpha_dash',
-                Rule::unique('book_catalog.categories', 'code')->ignore($categoryId),
+                Rule::unique(SchemaTable::forValidation('book_catalog.categories'), 'code')->ignore($categoryId),
             ],
         ];
     }

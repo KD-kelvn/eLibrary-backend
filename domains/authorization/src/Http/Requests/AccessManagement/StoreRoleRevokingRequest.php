@@ -2,6 +2,7 @@
 
 namespace Modules\Authorization\Http\Requests\AccessManagement;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\Authorization\Models\RevokedRole;
 
@@ -16,7 +17,7 @@ class StoreRoleRevokingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_role_id' => ['required', 'integer', 'exists:auth.user_roles,id'],
+            'user_role_id' => ['required', 'integer', 'exists:'.SchemaTable::forValidation('auth.user_roles').',id'],
             'reason' => ['nullable', 'string'],
         ];
     }

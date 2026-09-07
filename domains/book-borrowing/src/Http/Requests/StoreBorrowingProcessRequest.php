@@ -2,6 +2,7 @@
 
 namespace Modules\BookBorrowing\Http\Requests;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Modules\BookBorrowing\Models\BorrowingProcess;
@@ -27,10 +28,10 @@ class StoreBorrowingProcessRequest extends FormRequest
                 'string',
                 'max:40',
                 'alpha_dash',
-                Rule::unique('book_borrowing.borrowing_processes', 'status_code'),
+                Rule::unique(SchemaTable::forValidation('book_borrowing.borrowing_processes'), 'status_code'),
             ],
-            'sender_role_id' => ['nullable', 'integer', 'exists:auth.roles,id'],
-            'receiver_role_id' => ['nullable', 'integer', 'exists:auth.roles,id'],
+            'sender_role_id' => ['nullable', 'integer', 'exists:'.SchemaTable::forValidation('auth.roles').',id'],
+            'receiver_role_id' => ['nullable', 'integer', 'exists:'.SchemaTable::forValidation('auth.roles').',id'],
             'is_final' => ['sometimes', 'boolean'],
         ];
     }

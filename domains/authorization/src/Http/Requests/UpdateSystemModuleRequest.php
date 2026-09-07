@@ -2,6 +2,7 @@
 
 namespace Modules\Authorization\Http\Requests;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Modules\Authorization\Models\SystemModule;
@@ -29,7 +30,7 @@ class UpdateSystemModuleRequest extends FormRequest
                 'string',
                 'max:100',
                 'alpha_dash',
-                Rule::unique('auth.system_modules', 'code')->ignore($moduleId),
+                Rule::unique(SchemaTable::forValidation('auth.system_modules'), 'code')->ignore($moduleId),
             ],
             'icon_code' => ['sometimes', 'nullable', 'string', 'max:100'],
             'bg_color' => ['sometimes', 'nullable', 'string', 'max:50'],

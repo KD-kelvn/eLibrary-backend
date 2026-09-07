@@ -2,6 +2,7 @@
 
 namespace Modules\Authorization\Http\Requests\AccessManagement;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\Authorization\Models\UserRole;
 
@@ -18,8 +19,8 @@ class UpdateRoleAssignmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => ['sometimes', 'required', 'integer', 'exists:auth.users,id'],
-            'role_id' => ['sometimes', 'required', 'integer', 'exists:auth.roles,id'],
+            'user_id' => ['sometimes', 'required', 'integer', 'exists:'.SchemaTable::forValidation('auth.users').',id'],
+            'role_id' => ['sometimes', 'required', 'integer', 'exists:'.SchemaTable::forValidation('auth.roles').',id'],
             'expires_at' => ['sometimes', 'nullable', 'date'],
         ];
     }

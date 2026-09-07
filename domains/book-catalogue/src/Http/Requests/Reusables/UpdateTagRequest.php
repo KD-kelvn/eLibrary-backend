@@ -2,6 +2,7 @@
 
 namespace Modules\BookCatalogue\Http\Requests\Reusables;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Modules\BookCatalogue\Models\Tag;
@@ -29,7 +30,7 @@ class UpdateTagRequest extends FormRequest
                 'string',
                 'max:100',
                 'alpha_dash',
-                Rule::unique('book_catalog.tags', 'code')->ignore($tagId),
+                Rule::unique(SchemaTable::forValidation('book_catalog.tags'), 'code')->ignore($tagId),
             ],
         ];
     }

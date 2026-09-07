@@ -2,6 +2,7 @@
 
 namespace Modules\Authentication\Http\Requests;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -21,9 +22,9 @@ class UpdateManagedUserRequest extends FormRequest
         $id = $this->route('user');
 
         return [
-            'username' => ['sometimes', 'required', 'string', 'max:100', Rule::unique('auth.users', 'username')->ignore($id)],
-            'email' => ['sometimes', 'required', 'email', 'max:255', Rule::unique('auth.users', 'email')->ignore($id)],
-            'phone' => ['sometimes', 'nullable', 'string', 'max:30', Rule::unique('auth.users', 'phone')->ignore($id)],
+            'username' => ['sometimes', 'required', 'string', 'max:100', Rule::unique(SchemaTable::forValidation('auth.users'), 'username')->ignore($id)],
+            'email' => ['sometimes', 'required', 'email', 'max:255', Rule::unique(SchemaTable::forValidation('auth.users'), 'email')->ignore($id)],
+            'phone' => ['sometimes', 'nullable', 'string', 'max:30', Rule::unique(SchemaTable::forValidation('auth.users'), 'phone')->ignore($id)],
             'password' => ['sometimes', 'required', 'confirmed', Password::defaults()],
             'fullname' => ['sometimes', 'required', 'string', 'max:255'],
             'gender' => ['sometimes', 'nullable', 'string', 'max:50'],

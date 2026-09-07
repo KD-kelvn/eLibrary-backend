@@ -2,6 +2,7 @@
 
 namespace Modules\Authorization\Http\Requests\RolesManagement;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Modules\Authorization\Enums\RoleStatusEnum;
@@ -28,7 +29,7 @@ class StoreRoleRequest extends FormRequest
                 'string',
                 'max:100',
                 'alpha_dash',
-                Rule::unique('auth.roles', 'code'),
+                Rule::unique(SchemaTable::forValidation('auth.roles'), 'code'),
             ],
         ];
     }

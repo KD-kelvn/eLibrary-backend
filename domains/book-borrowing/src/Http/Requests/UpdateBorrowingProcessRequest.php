@@ -2,6 +2,7 @@
 
 namespace Modules\BookBorrowing\Http\Requests;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\BookBorrowing\Models\BorrowingProcess;
 
@@ -23,8 +24,8 @@ class UpdateBorrowingProcessRequest extends FormRequest
             'index_no' => ['sometimes', 'required', 'integer', 'min:0'],
             'status_name' => ['sometimes', 'required', 'string', 'max:255'],
             'status_color' => ['sometimes', 'required', 'string', 'max:40'],
-            'sender_role_id' => ['sometimes', 'nullable', 'integer', 'exists:auth.roles,id'],
-            'receiver_role_id' => ['sometimes', 'nullable', 'integer', 'exists:auth.roles,id'],
+            'sender_role_id' => ['sometimes', 'nullable', 'integer', 'exists:'.SchemaTable::forValidation('auth.roles').',id'],
+            'receiver_role_id' => ['sometimes', 'nullable', 'integer', 'exists:'.SchemaTable::forValidation('auth.roles').',id'],
             'is_final' => ['sometimes', 'boolean'],
         ];
     }

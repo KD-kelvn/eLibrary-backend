@@ -2,6 +2,7 @@
 
 namespace Modules\BookReading\Http\Requests;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 
 class TrackReadingRequest extends FormRequest
@@ -14,8 +15,8 @@ class TrackReadingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'history_id' => ['nullable', 'integer', 'exists:book_catalog.reading_histories,id'],
-            'book_detail_id' => ['required_without:history_id', 'integer', 'exists:book_catalog.book_details,id'],
+            'history_id' => ['nullable', 'integer', 'exists:'.SchemaTable::forValidation('book_catalog.reading_histories').',id'],
+            'book_detail_id' => ['required_without:history_id', 'integer', 'exists:'.SchemaTable::forValidation('book_catalog.book_details').',id'],
             'progress_percent' => ['required', 'numeric', 'min:0', 'max:100'],
             'current_location' => ['nullable', 'string', 'max:255'],
             'duration_seconds' => ['nullable', 'integer', 'min:0'],

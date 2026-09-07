@@ -2,6 +2,7 @@
 
 namespace Modules\BookCatalogue\Http\Requests\Reusables;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Modules\BookCatalogue\Models\SubCategory;
@@ -19,7 +20,7 @@ class StoreSubCategoryRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'code' => ['required', 'string', 'max:100', 'alpha_dash', Rule::unique('book_catalog.sub_categories', 'code')],
+            'code' => ['required', 'string', 'max:100', 'alpha_dash', Rule::unique(SchemaTable::forValidation('book_catalog.sub_categories'), 'code')],
         ];
     }
 }

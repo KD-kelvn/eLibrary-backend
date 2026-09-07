@@ -2,6 +2,7 @@
 
 namespace Modules\Authorization\Http\Requests\Permissions;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Modules\Authorization\Models\Menu;
@@ -26,7 +27,7 @@ class UpdateMenuRequest extends FormRequest
                 'string',
                 'max:100',
                 'alpha_dash',
-                Rule::unique('auth.menus', 'code')->ignore($this->route('menu')),
+                Rule::unique(SchemaTable::forValidation('auth.menus'), 'code')->ignore($this->route('menu')),
             ],
             'icon_code' => ['sometimes', 'nullable', 'string', 'max:100'],
             'sort_order' => ['sometimes', 'integer', 'min:0'],

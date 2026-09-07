@@ -2,6 +2,7 @@
 
 namespace Modules\Authentication\Http\Requests;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 
 class IndexUserRequest extends FormRequest
@@ -15,7 +16,7 @@ class IndexUserRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string', 'max:255'],
-            'role_id' => ['nullable', 'integer', 'exists:auth.roles,id'],
+            'role_id' => ['nullable', 'integer', 'exists:'.SchemaTable::forValidation('auth.roles').',id'],
             'is_blocked' => ['nullable', 'boolean'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];

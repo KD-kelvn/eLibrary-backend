@@ -2,6 +2,7 @@
 
 namespace Modules\Authorization\Http\Requests;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Modules\Authorization\Models\SystemPage;
@@ -29,7 +30,7 @@ class UpdateSystemPageRequest extends FormRequest
                 'string',
                 'max:100',
                 'alpha_dash',
-                Rule::unique('auth.system_pages', 'code')->ignore($pageId),
+                Rule::unique(SchemaTable::forValidation('auth.system_pages'), 'code')->ignore($pageId),
             ],
             'url' => ['sometimes', 'nullable', 'string', 'max:255'],
             'is_public' => ['sometimes', 'boolean'],

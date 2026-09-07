@@ -2,6 +2,7 @@
 
 namespace Modules\Authorization\Http\Requests\Permissions;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Modules\Authorization\Models\MenuItem;
@@ -18,7 +19,7 @@ class UpdateMenuItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'menu_id' => ['sometimes', 'required', 'integer', 'exists:auth.menus,id'],
+            'menu_id' => ['sometimes', 'required', 'integer', 'exists:'.SchemaTable::forValidation('auth.menus').',id'],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string'],
             'code' => [
@@ -27,7 +28,7 @@ class UpdateMenuItemRequest extends FormRequest
                 'string',
                 'max:100',
                 'alpha_dash',
-                Rule::unique('auth.menu_items', 'code')->ignore($this->route('menu_item')),
+                Rule::unique(SchemaTable::forValidation('auth.menu_items'), 'code')->ignore($this->route('menu_item')),
             ],
             'route' => ['sometimes', 'required', 'string', 'max:255'],
             'icon_code' => ['sometimes', 'nullable', 'string', 'max:100'],

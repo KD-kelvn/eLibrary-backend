@@ -2,6 +2,7 @@
 
 namespace Modules\Authentication\Http\Requests;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\Authentication\Models\PersonalAccessToken;
 
@@ -20,7 +21,7 @@ class IndexSessionRequest extends FormRequest
         return [
             'search' => ['nullable', 'string', 'max:120'],
             'status' => ['nullable', 'in:all,active,expired'],
-            'user_id' => ['nullable', 'integer', 'exists:auth.users,id'],
+            'user_id' => ['nullable', 'integer', 'exists:'.SchemaTable::forValidation('auth.users').',id'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];

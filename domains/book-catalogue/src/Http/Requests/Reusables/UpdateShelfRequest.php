@@ -2,6 +2,7 @@
 
 namespace Modules\BookCatalogue\Http\Requests\Reusables;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Modules\BookCatalogue\Models\Shelf;
@@ -29,7 +30,7 @@ class UpdateShelfRequest extends FormRequest
                 'string',
                 'max:100',
                 'alpha_dash',
-                Rule::unique('book_catalog.shelves', 'code')->ignore($shelfId),
+                Rule::unique(SchemaTable::forValidation('book_catalog.shelves'), 'code')->ignore($shelfId),
             ],
             'location' => ['sometimes', 'nullable', 'string'],
             'number' => ['sometimes', 'nullable', 'string', 'max:100'],

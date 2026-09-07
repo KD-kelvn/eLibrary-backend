@@ -2,6 +2,7 @@
 
 namespace Modules\Authorization\Http\Requests;
 
+use App\Support\SchemaTable;
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\Authorization\Models\SystemModuleRole;
 
@@ -16,8 +17,8 @@ class StoreSystemModuleRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'system_module_id' => ['required', 'integer', 'exists:auth.system_modules,id'],
-            'role_id' => ['required', 'integer', 'exists:auth.roles,id'],
+            'system_module_id' => ['required', 'integer', 'exists:'.SchemaTable::forValidation('auth.system_modules').',id'],
+            'role_id' => ['required', 'integer', 'exists:'.SchemaTable::forValidation('auth.roles').',id'],
         ];
     }
 }
