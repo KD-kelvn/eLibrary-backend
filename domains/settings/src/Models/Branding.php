@@ -12,9 +12,9 @@ class Branding extends BaseModelWithAudits implements HasMedia
 
     public const DEFAULTS = [
         'app_name' => 'eLibrary',
-        'primary_color' => '#863BFF',
-        'secondary_color' => '#0EA5E9',
-        'tertiary_color' => '#14B8A6',
+        'primary_color' => '#F05454',
+        'secondary_color' => '#45CFDD',
+        'tertiary_color' => '#4ECCA3',
     ];
 
     protected $table = 'settings.brandings';
