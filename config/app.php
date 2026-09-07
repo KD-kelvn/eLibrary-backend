@@ -51,6 +51,17 @@ return [
 
     /*
      * |--------------------------------------------------------------------------
+     * | Frontend SPA URL
+     * |--------------------------------------------------------------------------
+     * |
+     * | Used for CORS and for deep links inside transactional emails
+     * | (login, password reset, and other CTAs).
+     * |
+     */
+    'frontend_url' => env('FRONTEND_URL', env('APP_URL', 'http://localhost')),
+
+    /*
+     * |--------------------------------------------------------------------------
      * | Application Timezone
      * |--------------------------------------------------------------------------
      * |

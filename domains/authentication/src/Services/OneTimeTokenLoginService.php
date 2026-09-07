@@ -54,7 +54,7 @@ class OneTimeTokenLoginService
             'user_agent' => $data['user_agent'] ?? null,
         ]);
 
-        $this->otpNotifier->send($user, $plainToken, $via);
+        $this->otpNotifier->send($user, $plainToken, $via, $purpose);
 
         return array_filter([
             'via' => $via->value,

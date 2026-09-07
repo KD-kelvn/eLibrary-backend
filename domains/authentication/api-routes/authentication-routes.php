@@ -12,6 +12,12 @@ Route::prefix('auth')->group(function () {
     Route::post('otp/request', [AuthController::class, 'requestOtp']);
     Route::post('otp/verify', [AuthController::class, 'verifyOtp']);
 
+    Route::middleware('throttle:5,1')->group(function () {
+        Route::post('password/forgot', [AuthController::class, 'forgotPassword']);
+        Route::post('password/verify-otp', [AuthController::class, 'verifyPasswordResetOtp']);
+        Route::post('password/reset', [AuthController::class, 'resetPassword']);
+    });
+
     Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class])->group(function () {
         Route::get('me', [AuthController::class, 'me']);
         Route::post('logout', [AuthController::class, 'logout']);

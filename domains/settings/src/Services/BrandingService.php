@@ -2,6 +2,7 @@
 
 namespace Modules\Settings\Services;
 
+use App\Support\Mail\MailBranding;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Modules\Settings\Models\Branding;
@@ -50,6 +51,8 @@ class BrandingService
             $this->syncMedia($branding, 'logo', $data['logo'] ?? null, (bool) ($data['remove_logo'] ?? false));
             $this->syncMedia($branding, 'logo_dark', $data['logo_dark'] ?? null, (bool) ($data['remove_logo_dark'] ?? false));
             $this->syncMedia($branding, 'favicon', $data['favicon'] ?? null, (bool) ($data['remove_favicon'] ?? false));
+
+            app(MailBranding::class)->forget();
 
             return $branding->fresh(['media']);
         });

@@ -115,4 +115,26 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Markdown Mail Settings
+    |--------------------------------------------------------------------------
+    |
+    | Theme "elibrary" is the project-wide branded email look (logo, colors,
+    | header/footer). Use BrandedMailMessage::make() for new notifications.
+    |
+    */
+
+    'markdown' => [
+        'theme' => env('MAIL_MARKDOWN_THEME', 'elibrary'),
+
+        'paths' => [
+            resource_path('views/vendor/mail'),
+        ],
+
+        'extensions' => [
+            // \League\CommonMark\Extension\Strikethrough\StrikethroughExtension::class,
+        ],
+    ],
+
 ];
