@@ -24,6 +24,10 @@ class StoreSystemModuleRequest extends FormRequest
             'icon_code' => ['nullable', 'string', 'max:100'],
             'bg_color' => ['nullable', 'string', 'max:50'],
             'landing_url' => ['nullable', 'string', 'max:255'],
+            'sort_order' => ['nullable', 'integer', 'min:0', 'max:9999'],
+            'is_public' => ['sometimes', 'boolean'],
+            'is_active' => ['sometimes', 'boolean'],
+            'badge' => ['nullable', 'string', 'max:50'],
         ];
     }
 }

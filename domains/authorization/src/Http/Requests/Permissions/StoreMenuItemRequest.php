@@ -23,6 +23,11 @@ class StoreMenuItemRequest extends FormRequest
             'code' => ['required', 'string', 'max:100', 'alpha_dash', Rule::unique(SchemaTable::forValidation('auth.menu_items'), 'code')],
             'route' => ['required', 'string', 'max:255'],
             'icon_code' => ['nullable', 'string', 'max:100'],
+            'system_module_id' => [
+                'nullable',
+                'integer',
+                'exists:'.SchemaTable::forValidation('auth.system_modules').',id',
+            ],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_public' => ['nullable', 'boolean'],
             'is_active' => ['nullable', 'boolean'],

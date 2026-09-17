@@ -32,6 +32,12 @@ class UpdateMenuItemRequest extends FormRequest
             ],
             'route' => ['sometimes', 'required', 'string', 'max:255'],
             'icon_code' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'system_module_id' => [
+                'sometimes',
+                'nullable',
+                'integer',
+                'exists:'.SchemaTable::forValidation('auth.system_modules').',id',
+            ],
             'sort_order' => ['sometimes', 'integer', 'min:0'],
             'is_public' => ['sometimes', 'boolean'],
             'is_active' => ['sometimes', 'boolean'],

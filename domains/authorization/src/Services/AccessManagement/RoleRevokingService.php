@@ -11,7 +11,10 @@ use Modules\Authorization\Repositories\AccessManagement\RoleRevokingRepository;
 
 class RoleRevokingService
 {
-    public function __construct(protected RoleRevokingRepository $repository) {}
+    public function __construct(
+        protected RoleRevokingRepository $repository,
+        protected UserSystemActionService $userActions,
+    ) {}
 
     public function list(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
@@ -61,6 +64,8 @@ class RoleRevokingService
                 'userRole.role',
                 'userRole.assignedBy.profile',
             ]);
+
+            $this->userActions->revokeForUserRole($assignment);
 
             AdminActivity::log(
                 'Role assignment revoked',

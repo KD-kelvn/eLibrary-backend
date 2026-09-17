@@ -2,8 +2,8 @@
 
 namespace Modules\Authorization\Http\Resources;
 
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\Authorization\Models\SystemModuleRole;
 
 /**
@@ -20,6 +20,7 @@ class SystemModuleRoleResource extends JsonResource
             'id' => $this->id,
             'systemModuleId' => $this->system_module_id,
             'roleId' => $this->role_id,
+            'role' => RoleSummaryResource::make($this->whenLoaded('role')),
             'createdAt' => $this->whenNotNull($this->created_at),
             'updatedAt' => $this->whenNotNull($this->updated_at),
         ];

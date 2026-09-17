@@ -13,6 +13,7 @@ class MenuItem extends BaseModelWithAudits
 
     protected $fillable = [
         'menu_id',
+        'system_module_id',
         'name',
         'description',
         'code',
@@ -35,6 +36,11 @@ class MenuItem extends BaseModelWithAudits
     public function menu(): BelongsTo
     {
         return $this->belongsTo(Menu::class, 'menu_id');
+    }
+
+    public function systemModule(): BelongsTo
+    {
+        return $this->belongsTo(SystemModule::class, 'system_module_id');
     }
 
     public function menuItemRoles(): HasMany

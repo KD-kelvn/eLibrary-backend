@@ -18,6 +18,7 @@ class StoreSystemActionRequest extends FormRequest
     {
         return [
             'menu_item_id' => ['nullable', 'integer', 'exists:'.SchemaTable::forValidation('auth.menu_items').',id'],
+            'role_id' => ['required', 'integer', 'exists:'.SchemaTable::forValidation('auth.roles').',id'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'code' => ['required', 'string', 'max:150', 'regex:/^[A-Za-z0-9._-]+$/', Rule::unique(SchemaTable::forValidation('auth.system_actions'), 'code')],

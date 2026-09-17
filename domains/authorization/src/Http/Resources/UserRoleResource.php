@@ -24,7 +24,11 @@ class UserRoleResource extends JsonResource
             ],
             'role' => [
                 'id' => $this->role_id,
-                'details' => RoleSummaryResource::make($this->whenLoaded('role'))
+                'details' => RoleSummaryResource::make($this->whenLoaded('role')),
+                'actions' => $this->when(
+                    $this->relationLoaded('role') && $this->role?->relationLoaded('ownedSystemActions'),
+                    fn () => SystemActionResource::collection($this->role->ownedSystemActions),
+                ),
             ],
             'assignedBy' => [
                 'id' => $this->assigned_by,

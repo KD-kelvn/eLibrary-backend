@@ -16,7 +16,9 @@ class IndexSystemModuleRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string', 'max:255'],
+            'is_active' => ['nullable'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'page' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

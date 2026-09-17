@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Authentication\Http\Middleware\EnsureUserIsNotBlocked;
 use Modules\Authorization\Http\Controllers\AccessManagement\RoleAssignmentController;
 use Modules\Authorization\Http\Controllers\AccessManagement\RoleRevokingController;
+use Modules\Authorization\Http\Controllers\AccessManagement\UserSystemActionController;
 use Modules\Authorization\Http\Controllers\RolesManagement\RolesController;
 use Modules\Authorization\Http\Controllers\Permissions\MenuController;
 use Modules\Authorization\Http\Controllers\Permissions\MenuItemController;
@@ -49,4 +50,9 @@ Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class])->group(functi
     Route::apiResource('system-actions', SystemActionController::class);
     Route::post('system-action-roles', [PermissionRoleController::class, 'storeSystemActionRole'])->name('system-action-roles.store');
     Route::delete('system-action-roles/{system_action_role}', [PermissionRoleController::class, 'destroySystemActionRole']);
+
+    Route::get('users/{user}/system-actions', [UserSystemActionController::class, 'index']);
+    Route::put('users/{user}/system-actions', [UserSystemActionController::class, 'sync']);
+    Route::post('user-system-actions', [UserSystemActionController::class, 'store']);
+    Route::delete('user-system-actions/{user_system_action}', [UserSystemActionController::class, 'destroy']);
 });

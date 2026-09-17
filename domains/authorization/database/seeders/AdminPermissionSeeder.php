@@ -47,6 +47,7 @@ class AdminPermissionSeeder extends Seeder
                 'items' => [
                     ['name' => 'System menu', 'code' => 'system-menu', 'route' => '/admin/permissions/menus', 'sort_order' => 10],
                     ['name' => 'System actions', 'code' => 'system-actions', 'route' => '/admin/permissions/actions', 'sort_order' => 20],
+                    ['name' => 'Workspaces', 'code' => 'system-workspaces', 'route' => '/admin/permissions/workspaces', 'sort_order' => 30],
                 ],
             ],
             [
@@ -131,6 +132,9 @@ class AdminPermissionSeeder extends Seeder
             ['name' => 'Create actions', 'code' => 'actions.create', 'item' => 'system-actions', 'type' => 'create'],
             ['name' => 'Update actions', 'code' => 'actions.update', 'item' => 'system-actions', 'type' => 'update'],
             ['name' => 'Delete actions', 'code' => 'actions.delete', 'item' => 'system-actions', 'type' => 'delete'],
+            ['name' => 'Create workspaces', 'code' => 'workspaces.create', 'item' => 'system-workspaces', 'type' => 'create'],
+            ['name' => 'Update workspaces', 'code' => 'workspaces.update', 'item' => 'system-workspaces', 'type' => 'update'],
+            ['name' => 'Delete workspaces', 'code' => 'workspaces.delete', 'item' => 'system-workspaces', 'type' => 'delete'],
             ['name' => 'Export readings', 'code' => 'readings.export', 'item' => 'readings-history', 'type' => 'export'],
             ['name' => 'Update appearance', 'code' => 'appearance.update', 'item' => 'appearance', 'type' => 'update'],
             ['name' => 'Create login slides', 'code' => 'login-slides.create', 'item' => 'login-slider', 'type' => 'create'],
@@ -148,6 +152,7 @@ class AdminPermissionSeeder extends Seeder
                 [
                     'name' => $definition['name'],
                     'menu_item_id' => $items[$definition['item']]->id,
+                    'role_id' => $admin->id,
                     'action_type' => $definition['type'],
                     'is_active' => true,
                 ],

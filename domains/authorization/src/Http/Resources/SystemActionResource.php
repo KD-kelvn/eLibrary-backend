@@ -12,16 +12,19 @@ class SystemActionResource extends JsonResource
         return [
             'id' => $this->id,
             'menuItemId' => $this->menu_item_id,
+            'roleId' => $this->role_id,
             'name' => $this->name,
             'description' => $this->description,
             'code' => $this->code,
             'actionType' => $this->action_type,
             'isActive' => $this->is_active,
             'menuItem' => NavigationMenuItemResource::make($this->whenLoaded('menuItem')),
+            'role' => RoleSummaryResource::make($this->whenLoaded('role')),
             'roles' => RoleSummaryResource::collection($this->whenLoaded('roles')),
             'roleAssignments' => PermissionRoleAssignmentResource::collection(
                 $this->whenLoaded('systemActionRoles'),
             ),
+            'userGrantsCount' => $this->whenCounted('userGrants'),
             'createdAt' => $this->created_at,
             'updatedAt' => $this->updated_at,
         ];

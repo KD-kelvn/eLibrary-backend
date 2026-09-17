@@ -20,6 +20,7 @@ class UpdateSystemActionRequest extends FormRequest
     {
         return [
             'menu_item_id' => ['sometimes', 'nullable', 'integer', 'exists:'.SchemaTable::forValidation('auth.menu_items').',id'],
+            'role_id' => ['sometimes', 'required', 'integer', 'exists:'.SchemaTable::forValidation('auth.roles').',id'],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string'],
             'code' => [

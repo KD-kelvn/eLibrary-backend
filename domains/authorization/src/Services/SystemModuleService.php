@@ -29,34 +29,37 @@ class SystemModuleService
 
     public function store(array $data): SystemModule
     {
-        return $this->repository->create(collect($data)->only([
-            'name',
-            'description',
-            'code',
-            'icon_code',
-            'bg_color',
-            'landing_url',
-        ])->all());
+        return $this->repository->create($this->attributes($data));
     }
 
     public function update(int $id, array $data): SystemModule
     {
         $module = $this->findOrFail($id);
 
-        return $this->repository->update($module, collect($data)->only([
-            'name',
-            'description',
-            'code',
-            'icon_code',
-            'bg_color',
-            'landing_url',
-        ])->all());
+        return $this->repository->update($module, $this->attributes($data));
     }
 
     public function destroy(int $id): void
     {
         $module = $this->findOrFail($id);
         $this->repository->delete($module);
+    }
+
+    /** @return array<string, mixed> */
+    protected function attributes(array $data): array
+    {
+        return collect($data)->only([
+            'name',
+            'description',
+            'code',
+            'icon_code',
+            'bg_color',
+            'landing_url',
+            'sort_order',
+            'is_public',
+            'is_active',
+            'badge',
+        ])->all();
     }
 
     protected function findOrFail(int $id): SystemModule

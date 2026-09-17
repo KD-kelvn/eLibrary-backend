@@ -2,22 +2,24 @@
 
 namespace Modules\Authorization\Services;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Modules\Authentication\Models\User;
 use Modules\Authorization\Enums\RoleStatusEnum;
 use Modules\Authorization\Models\Menu;
 use Modules\Authorization\Models\SystemAction;
+use Modules\Authorization\Models\SystemModule;
 
 class AccessContextService
 {
     /**
-     * @return array{roles: Collection, menus: Collection, actions: Collection}
+     * @return array{roles: Collection, menus: Collection, actions: Collection, modules: Collection}
      */
     public function forUser(User $user): array
     {
-        $assignments = $user->activeUserRoles()
+        $assignments = $user
+            ->activeUserRoles()
             ->whereHas('role', fn (Builder $query) => $query->where('status', RoleStatusEnum::Active->value))
             ->with('role')
             ->get();
@@ -61,7 +63,12 @@ class AccessContextService
                         ),
                     );
             })
-            ->with(['items' => $itemAccess])
+            ->with([
+                'items' => function ($query) use ($itemAccess) {
+                    $itemAccess($query);
+                    $query->with('systemModule');
+                },
+            ])
             ->orderBy('sort_order')
             ->get();
 
@@ -70,14 +77,33 @@ class AccessContextService
             ->when(
                 $roleIds->isEmpty(),
                 fn (Builder $query) => $query->whereRaw('1 = 0'),
-                fn (Builder $query) => $query->whereHas(
-                    'roles',
-                    fn (Builder $rolesQuery) => $rolesQuery->whereIn('auth.roles.id', $roleIds),
-                ),
+                fn (Builder $query) => $query
+                    ->whereIn('role_id', $roleIds)
+                    ->whereHas(
+                        'userGrants',
+                        fn (Builder $grants) => $grants->where('user_id', $user->id),
+                    ),
             )
             ->orderBy('code')
+            ->get(['id', 'code', 'name', 'action_type', 'role_id', 'is_active']);
+
+        $modules = SystemModule::query()
+            ->where('is_active', true)
+            ->where(function (Builder $query) use ($roleIds) {
+                $query
+                    ->where('is_public', true)
+                    ->when(
+                        $roleIds->isNotEmpty(),
+                        fn (Builder $builder) => $builder->orWhereHas(
+                            'roles',
+                            fn (Builder $rolesQuery) => $rolesQuery->whereIn('auth.roles.id', $roleIds),
+                        ),
+                    );
+            })
+            ->orderBy('sort_order')
+            ->orderBy('name')
             ->get();
 
-        return compact('roles', 'menus', 'actions');
+        return compact('roles', 'menus', 'actions', 'modules');
     }
 }

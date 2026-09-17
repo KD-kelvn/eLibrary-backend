@@ -15,6 +15,7 @@ class NavigationMenuItemResource extends JsonResource
             'label' => $this->name,
             'route' => $this->route,
             'icon' => $this->icon_code,
+            'moduleKey' => $this->systemModule?->code,
             'isPublic' => $this->is_public,
             'order' => $this->sort_order,
         ];

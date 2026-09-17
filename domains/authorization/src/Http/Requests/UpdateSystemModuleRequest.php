@@ -35,6 +35,10 @@ class UpdateSystemModuleRequest extends FormRequest
             'icon_code' => ['sometimes', 'nullable', 'string', 'max:100'],
             'bg_color' => ['sometimes', 'nullable', 'string', 'max:50'],
             'landing_url' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'sort_order' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:9999'],
+            'is_public' => ['sometimes', 'boolean'],
+            'is_active' => ['sometimes', 'boolean'],
+            'badge' => ['sometimes', 'nullable', 'string', 'max:50'],
         ];
     }
 }

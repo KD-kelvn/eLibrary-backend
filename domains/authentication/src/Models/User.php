@@ -78,6 +78,11 @@ class User extends Authenticatable
         return $this->userRoles()->active();
     }
 
+    public function userSystemActions(): HasMany
+    {
+        return $this->hasMany(\Modules\Authorization\Models\UserSystemAction::class, 'user_id');
+    }
+
     public function hasActiveRole(string ...$codes): bool
     {
         return $this->activeUserRoles()

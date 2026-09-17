@@ -17,7 +17,20 @@ class SystemModule extends BaseModelWithAudits
         'icon_code',
         'bg_color',
         'landing_url',
+        'sort_order',
+        'is_public',
+        'is_active',
+        'badge',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'sort_order' => 'integer',
+            'is_public' => 'boolean',
+            'is_active' => 'boolean',
+        ];
+    }
 
     public function systemModuleRoles(): HasMany
     {

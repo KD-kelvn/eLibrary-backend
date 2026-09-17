@@ -13,6 +13,7 @@ class SystemAction extends BaseModelWithAudits
 
     protected $fillable = [
         'menu_item_id',
+        'role_id',
         'name',
         'description',
         'code',
@@ -30,9 +31,19 @@ class SystemAction extends BaseModelWithAudits
         return $this->belongsTo(MenuItem::class, 'menu_item_id');
     }
 
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
     public function systemActionRoles(): HasMany
     {
         return $this->hasMany(SystemActionRole::class, 'system_action_id');
+    }
+
+    public function userGrants(): HasMany
+    {
+        return $this->hasMany(UserSystemAction::class, 'system_action_id');
     }
 
     public function roles(): BelongsToMany

@@ -44,10 +44,23 @@ class UserRepository
             ->paginate($perPage);
     }
 
+    /**
+     * Detail payload for user access management (roles + role actions + grants).
+     */
     public function findWithRelations(int $id): ?User
     {
         return User::query()
-            ->with(['profile', 'userRoles.role', 'userRoles.assignedBy.profile', 'userRoles.revokedRole'])
+            ->with([
+                'profile',
+                'userRoles' => fn ($query) => $query
+                    ->with([
+                        'role:id,name,code,status',
+                        'role.ownedSystemActions:id,role_id,name,code,action_type,is_active',
+                        'assignedBy.profile',
+                        'revokedRole',
+                    ]),
+                'userSystemActions:id,user_id,system_action_id,user_role_id',
+            ])
             ->find($id);
     }
 

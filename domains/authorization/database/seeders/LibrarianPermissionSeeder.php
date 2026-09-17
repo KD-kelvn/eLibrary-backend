@@ -121,6 +121,7 @@ class LibrarianPermissionSeeder extends Seeder
                 [
                     'name' => $definition['name'],
                     'menu_item_id' => $items[$definition['item']]->id,
+                    'role_id' => $librarian->id,
                     'action_type' => $definition['type'],
                     'is_active' => true,
                 ],

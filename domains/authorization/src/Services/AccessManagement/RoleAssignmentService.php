@@ -7,10 +7,14 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\Authorization\Exceptions\AuthorizationException;
 use Modules\Authorization\Models\UserRole;
 use Modules\Authorization\Repositories\AccessManagement\RoleAssignmentRepository;
+use Modules\Authorization\Services\AccessManagement\UserSystemActionService;
 
 class RoleAssignmentService
 {
-    public function __construct(protected RoleAssignmentRepository $repository) {}
+    public function __construct(
+        protected RoleAssignmentRepository $repository,
+        protected UserSystemActionService $userActions,
+    ) {}
 
     public function list(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
@@ -97,6 +101,7 @@ class RoleAssignmentService
             event: 'deleted',
         );
 
+        $this->userActions->revokeForUserRole($assignment);
         $this->repository->delete($assignment);
     }
 

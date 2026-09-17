@@ -4,9 +4,12 @@ namespace Modules\Authorization\Services\RolesManagement;
 
 use App\Support\AdminActivity;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Modules\Authorization\Enums\RoleStatusEnum;
 use Modules\Authorization\Exceptions\AuthorizationException;
 use Modules\Authorization\Models\Role;
+use Modules\Authorization\Models\SystemAction;
+use Modules\Authorization\Models\UserSystemAction;
 use Modules\Authorization\Repositories\RolesManagement\RolesRepository;
 
 class RolesService
@@ -68,17 +71,35 @@ class RolesService
     {
         $role = $this->findOrFail($id);
 
-        if (
-            $this->repository->isActive($role)
-            && $this->repository->countActiveAssignments($role) > 0
-        ) {
-            throw AuthorizationException::forbidden(
-                'Cannot delete an active role that has active assignments.',
+        $assignmentCount = $role->userRoles()->count();
+        if ($assignmentCount > 0) {
+            throw AuthorizationException::unprocessable(
+                'Cannot delete a role that is assigned to users. Revoke or delete those assignments first.',
             );
         }
 
-        AdminActivity::log('Role deleted', $role, ['code' => $role->code], event: 'deleted');
-        $this->repository->delete($role);
+        DB::transaction(function () use ($role) {
+            $actions = SystemAction::query()->where('role_id', $role->id)->get();
+
+            foreach ($actions as $action) {
+                UserSystemAction::query()
+                    ->where('system_action_id', $action->id)
+                    ->get()
+                    ->each(fn (UserSystemAction $grant) => $grant->delete());
+
+                $action->systemActionRoles()->get()->each(
+                    fn ($pivot) => $pivot->delete(),
+                );
+                $action->delete();
+            }
+
+            AdminActivity::log('Role deleted', $role, [
+                'code' => $role->code,
+                'deleted_actions' => $actions->pluck('code')->all(),
+            ], event: 'deleted');
+
+            $this->repository->delete($role);
+        });
     }
 
     protected function findOrFail(int $id): Role

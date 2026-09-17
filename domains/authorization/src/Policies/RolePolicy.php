@@ -11,7 +11,9 @@ class RolePolicy
 {
     use HandlesAuthorization;
 
-    public function __construct(protected RolesRepository $repository) {}
+    public function __construct(
+        protected RolesRepository $repository
+    ) {}
 
     public function viewAny(User $user): bool
     {
@@ -39,13 +41,6 @@ class RolePolicy
             return false;
         }
 
-        if (
-            $this->repository->isActive($role)
-            && $this->repository->countActiveAssignments($role) > 0
-        ) {
-            return false;
-        }
-
-        return true;
+        return $this->repository->countAssignments($role) === 0;
     }
 }

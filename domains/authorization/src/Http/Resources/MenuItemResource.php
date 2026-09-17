@@ -12,6 +12,7 @@ class MenuItemResource extends JsonResource
         return [
             'id' => $this->id,
             'menuId' => $this->menu_id,
+            'systemModuleId' => $this->system_module_id,
             'name' => $this->name,
             'description' => $this->description,
             'code' => $this->code,
@@ -20,6 +21,7 @@ class MenuItemResource extends JsonResource
             'sortOrder' => $this->sort_order,
             'isPublic' => $this->is_public,
             'isActive' => $this->is_active,
+            'module' => NavigationWorkspaceResource::make($this->whenLoaded('systemModule')),
             'roles' => RoleSummaryResource::collection($this->whenLoaded('roles')),
             'roleAssignments' => PermissionRoleAssignmentResource::collection(
                 $this->whenLoaded('menuItemRoles'),

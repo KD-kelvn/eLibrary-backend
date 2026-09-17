@@ -12,15 +12,23 @@ class SystemModuleRepository
     public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         return $this->model->newQuery()
+            ->with(['roles', 'systemModuleRoles.role'])
+            ->withCount('systemModuleRoles')
             ->when(
                 filled($filters['search'] ?? null),
                 fn ($query) => $query->where(function ($builder) use ($filters) {
                     $search = $filters['search'];
                     $builder->where('name', 'like', "%{$search}%")
-                        ->orWhere('code', 'like', "%{$search}%");
+                        ->orWhere('code', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
                 }),
             )
-            ->latest('id')
+            ->when(
+                array_key_exists('is_active', $filters) && $filters['is_active'] !== null && $filters['is_active'] !== '',
+                fn ($query) => $query->where('is_active', filter_var($filters['is_active'], FILTER_VALIDATE_BOOLEAN)),
+            )
+            ->orderBy('sort_order')
+            ->orderBy('name')
             ->paginate($perPage);
     }
 
@@ -49,7 +57,7 @@ class SystemModuleRepository
     {
         $module->update($attributes);
 
-        return $module->refresh();
+        return $module->refresh()->load(['roles', 'systemModuleRoles.role']);
     }
 
     public function delete(SystemModule $module): bool

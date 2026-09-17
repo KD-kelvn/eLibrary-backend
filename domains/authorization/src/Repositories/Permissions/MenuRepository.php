@@ -32,6 +32,7 @@ class MenuRepository
                     'roles',
                     'menuRoles.role',
                     'items.roles',
+                    'items.systemModule',
                     'items.menuItemRoles.role',
                     'items.actions.roles',
                     'items.actions.systemActionRoles.role',

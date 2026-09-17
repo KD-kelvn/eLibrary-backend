@@ -29,6 +29,8 @@ class RoleResource extends JsonResource
             'code' => $this->code,
             'assignmentsCount' => $this->whenCounted('userRoles'),
             'activeAssignmentsCount' => $this->whenCounted('activeUserRoles'),
+            'actionsCount' => $this->whenCounted('ownedSystemActions'),
+            'actions' => SystemActionResource::collection($this->whenLoaded('ownedSystemActions')),
             'assignments' => UserRoleResource::collection($this->whenLoaded('userRoles')),
             'revocations' => RevokedRoleResource::collection($this->whenLoaded('revokedRoles')),
             'createdAt' => $this->whenNotNull($this->created_at),

@@ -13,7 +13,7 @@ class RolesRepository
     public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         return $this->model->newQuery()
-            ->withCount(['userRoles', 'activeUserRoles'])
+            ->withCount(['userRoles', 'activeUserRoles', 'ownedSystemActions'])
             ->when(
                 filled($filters['search'] ?? null),
                 fn ($query) => $query->where(function ($builder) use ($filters) {
@@ -39,12 +39,14 @@ class RolesRepository
     {
         return $this->model->newQuery()
             ->with([
-                'userRoles.user.profile',
-                'userRoles.assignedBy.profile',
-                'userRoles.revokedRole.revokedBy.profile',
-                'revokedRoles.revokedBy.profile',
-                'revokedRoles.userRole.user.profile',
+                'ownedSystemActions:id,role_id,name,code,action_type,is_active,menu_item_id',
+                'userRoles' => fn ($query) => $query->with([
+                    'user.profile',
+                    'assignedBy.profile',
+                    'revokedRole.revokedBy.profile',
+                ]),
             ])
+            ->withCount(['userRoles', 'activeUserRoles', 'ownedSystemActions'])
             ->find($id);
     }
 
@@ -68,6 +70,11 @@ class RolesRepository
     public function countActiveAssignments(Role $role): int
     {
         return $role->activeUserRoles()->count();
+    }
+
+    public function countAssignments(Role $role): int
+    {
+        return $role->userRoles()->count();
     }
 
     public function isActive(Role $role): bool
