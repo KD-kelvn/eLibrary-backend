@@ -21,7 +21,7 @@ class DigitalBookResource extends JsonResource
             'bookDetailId' => $this->book_detail_id,
             'file' => [
                 'cover' => $this->file_cover,
-                'path' => $this->file_path,
+                // Storage path is never exposed — pages stream via /books/{id}/pages/{n}.
                 'name' => $this->file_name,
                 'type' => $this->file_type,
                 'size' => $this->file_size,

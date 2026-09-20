@@ -4,6 +4,7 @@ namespace Modules\BookCatalogue\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 use Modules\BookCatalogue\Exceptions\BookCatalogueException;
 use Modules\BookCatalogue\Http\Requests\IndexBookDetailRequest;
 use Modules\BookCatalogue\Http\Requests\StoreBookDetailRequest;
@@ -12,12 +13,15 @@ use Modules\BookCatalogue\Http\Resources\BookDetailResource;
 use Modules\BookCatalogue\Models\BookDetail;
 use Modules\BookCatalogue\Services\BookDetailService;
 use Modules\BookCatalogue\Traits\HandlesApiResponses;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BookDetailController extends Controller
 {
     use HandlesApiResponses;
 
-    public function __construct(private readonly BookDetailService $bookDetailService) {}
+    public function __construct(
+        private readonly BookDetailService $bookDetailService
+    ) {}
 
     public function index(IndexBookDetailRequest $request): JsonResponse
     {
@@ -28,6 +32,65 @@ class BookDetailController extends Controller
             );
 
             return $this->paginatedResponse($paginator, BookDetailResource::class, 'Books retrieved.');
+        } catch (BookCatalogueException $exception) {
+            return $this->handleBookCatalogueException($exception);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+            return $this->failResponse(null, $exception->getMessage(), 403);
+        } catch (\Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), 500, $exception);
+        }
+    }
+
+    public function summary(): JsonResponse
+    {
+        try {
+            $this->authorize('viewAny', BookDetail::class);
+
+            return $this->successResponse(
+                $this->bookDetailService->summary(),
+                'Book summary retrieved.',
+            );
+        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+            return $this->failResponse(null, $exception->getMessage(), 403);
+        } catch (\Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), 500, $exception);
+        }
+    }
+
+    public function related(string $book): JsonResponse
+    {
+        try {
+            $model = BookDetail::query()->findOrFail($book);
+            $this->authorize('view', $model);
+
+            $related = $this->bookDetailService->related((int) $book);
+
+            return $this->successResponse(
+                BookDetailResource::collection($related),
+                'Related books retrieved.',
+            );
+        } catch (BookCatalogueException $exception) {
+            return $this->handleBookCatalogueException($exception);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+            return $this->failResponse(null, $exception->getMessage(), 403);
+        } catch (\Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), 500, $exception);
+        }
+    }
+
+    public function download(string $book): StreamedResponse|JsonResponse
+    {
+        try {
+            $model = BookDetail::query()->findOrFail($book);
+            $this->authorize('view', $model);
+
+            $file = $this->bookDetailService->downloadPath((int) $book);
+
+            return Storage::disk('public')->download(
+                $file['path'],
+                $file['name'],
+                ['Content-Type' => $file['type']],
+            );
         } catch (BookCatalogueException $exception) {
             return $this->handleBookCatalogueException($exception);
         } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
@@ -58,7 +121,10 @@ class BookDetailController extends Controller
     public function store(StoreBookDetailRequest $request): JsonResponse
     {
         try {
-            $bookDetail = $this->bookDetailService->store($request->validated());
+            $bookDetail = $this->bookDetailService->store(
+                $request->validated(),
+                $request->file('file'),
+            );
 
             return $this->resourceResponse(
                 BookDetailResource::make($bookDetail),
@@ -77,7 +143,11 @@ class BookDetailController extends Controller
     public function update(UpdateBookDetailRequest $request, string $book): JsonResponse
     {
         try {
-            $updated = $this->bookDetailService->update((int) $book, $request->validated());
+            $updated = $this->bookDetailService->update(
+                (int) $book,
+                $request->validated(),
+                $request->file('file'),
+            );
 
             return $this->resourceResponse(
                 BookDetailResource::make($updated),

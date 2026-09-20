@@ -2,7 +2,9 @@
 
 namespace Modules\BookCatalogue\Services;
 
+use App\Repositories\FilesRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Modules\BookCatalogue\Enums\BookTypeEnum;
 use Modules\BookCatalogue\Exceptions\BookCatalogueException;
@@ -11,11 +13,57 @@ use Modules\BookCatalogue\Repositories\BookDetailRepository;
 
 class BookDetailService
 {
-    public function __construct(protected BookDetailRepository $repository) {}
+    public function __construct(
+        protected BookDetailRepository $repository,
+        protected FilesRepository $files,
+        protected EbookMetadataService $ebookMetadata,
+    ) {}
 
     public function list(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         return $this->repository->paginate($filters, $perPage);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function summary(): array
+    {
+        return $this->repository->summary();
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, BookDetail>
+     */
+    public function related(int $id, int $limit = 6)
+    {
+        $bookDetail = $this->findOrFail($id);
+
+        return $this->repository->related($bookDetail, $limit);
+    }
+
+    public function downloadPath(int $id): array
+    {
+        $bookDetail = $this->show($id);
+        $digital = $bookDetail->digitalBook;
+
+        if (! $digital) {
+            throw BookCatalogueException::forbidden('Only digital books can be downloaded.');
+        }
+
+        if (! $digital->is_downloadable) {
+            throw BookCatalogueException::forbidden('Downloads are not allowed for this title.');
+        }
+
+        if (! $this->files->existsOnDisk($digital->file_path)) {
+            throw BookCatalogueException::notFound('Ebook file');
+        }
+
+        return [
+            'path' => $digital->file_path,
+            'name' => $digital->file_name ?: basename($digital->file_path),
+            'type' => $digital->file_type ?: 'application/octet-stream',
+        ];
     }
 
     public function show(int $id): BookDetail
@@ -29,9 +77,11 @@ class BookDetailService
         return $bookDetail;
     }
 
-    public function store(array $data): BookDetail
+    public function store(array $data, ?UploadedFile $file = null): BookDetail
     {
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data, $file) {
+            $data = $this->applyDigitalUpload($data, $file, requireFile: true);
+
             $bookDetail = $this->repository->create(collect($data)->only([
                 'type_code',
                 'title',
@@ -53,10 +103,11 @@ class BookDetailService
         });
     }
 
-    public function update(int $id, array $data): BookDetail
+    public function update(int $id, array $data, ?UploadedFile $file = null): BookDetail
     {
-        return DB::transaction(function () use ($id, $data) {
+        return DB::transaction(function () use ($id, $data, $file) {
             $bookDetail = $this->findOrFail($id);
+            $data = $this->applyDigitalUpload($data, $file, requireFile: false, existing: $bookDetail);
 
             $this->repository->update($bookDetail, collect($data)->only([
                 'type_code',
@@ -92,6 +143,11 @@ class BookDetailService
         }
 
         DB::transaction(function () use ($bookDetail) {
+            $digital = $bookDetail->digitalBook;
+            if ($digital?->file_path) {
+                $this->files->delete($digital->file_path);
+            }
+
             $this->repository->softDeletePhysicalBooks($bookDetail);
             $this->repository->softDeleteDigitalBook($bookDetail);
             $this->repository->delete($bookDetail);
@@ -107,6 +163,73 @@ class BookDetailService
         }
 
         return $bookDetail;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function applyDigitalUpload(
+        array $data,
+        ?UploadedFile $file,
+        bool $requireFile,
+        ?BookDetail $existing = null,
+    ): array {
+        $type = $data['type_code'] ?? $existing?->type_code;
+        $isDigital = $type === BookTypeEnum::Digital
+            || $type === BookTypeEnum::Digital->value
+            || (is_string($type) && strtoupper($type) === 'DIGITAL');
+
+        if (! $isDigital) {
+            return $data;
+        }
+
+        $digital = $data['digital_book'] ?? [];
+
+        if ($file) {
+            $meta = $this->ebookMetadata->inspectUpload($file);
+            $stored = $this->files->saveFromUpload($file, 'ebooks');
+
+            if ($existing?->digitalBook?->file_path) {
+                $this->files->delete($existing->digitalBook->file_path);
+            }
+
+            $digital = array_merge($digital, [
+                'file_path' => $stored['file_path'],
+                'file_name' => $file->getClientOriginalName() ?: $stored['file_name'],
+                'file_type' => $stored['file_type'],
+                'file_size' => (int) $stored['file_size'],
+                'format' => $meta['format']->value,
+                'checksum' => hash_file('sha256', $file->getRealPath() ?: $file->getPathname()) ?: null,
+            ]);
+
+            $data['pages'] = $meta['pages'];
+            $data['digital_book'] = $digital;
+
+            return $data;
+        }
+
+        if ($requireFile) {
+            throw BookCatalogueException::unprocessable('An ebook file (PDF or EPUB) is required.');
+        }
+
+        // Keep existing file meta; allow toggling downloadable/active only.
+        if ($existing?->digitalBook) {
+            $current = $existing->digitalBook;
+            $data['digital_book'] = array_merge([
+                'file_cover' => $current->file_cover,
+                'file_path' => $current->file_path,
+                'file_name' => $current->file_name,
+                'file_type' => $current->file_type,
+                'file_size' => $current->file_size,
+                'format' => $current->format?->value ?? $current->format,
+                'checksum' => $current->checksum,
+                'is_downloadable' => $current->is_downloadable,
+                'is_active' => $current->is_active,
+            ], $digital);
+        }
+
+        return $data;
     }
 
     /**
