@@ -2,6 +2,7 @@
 
 namespace Modules\BookCatalogue\Http\Resources;
 
+use App\Support\PublicStorageUrl;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Request;
 use Modules\BookCatalogue\Models\BookDetail;
@@ -31,6 +32,7 @@ class BookDetailResource extends JsonResource
             'edition' => $this->edition,
             'language' => $this->language,
             'pages' => $this->pages,
+            'cover' => $this->resolveCoverUrl(),
             'physicalBooks' => PhysicalBookResource::collection($this->whenLoaded('physicalBooks')),
             'digitalBook' => DigitalBookResource::make($this->whenLoaded('digitalBook')),
             'categories' => CategorySummaryResource::collection($this->whenLoaded('categories')),
@@ -42,5 +44,15 @@ class BookDetailResource extends JsonResource
             'createdAt' => $this->whenNotNull($this->created_at),
             'updatedAt' => $this->whenNotNull($this->updated_at),
         ];
+    }
+
+    protected function resolveCoverUrl(): ?string
+    {
+        $cover = $this->file_cover;
+        if (! $cover && $this->relationLoaded('digitalBook')) {
+            $cover = $this->digitalBook?->file_cover;
+        }
+
+        return PublicStorageUrl::make($cover);
     }
 }

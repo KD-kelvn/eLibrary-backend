@@ -124,6 +124,7 @@ class BookDetailController extends Controller
             $bookDetail = $this->bookDetailService->store(
                 $request->validated(),
                 $request->file('file'),
+                $request->file('cover'),
             );
 
             return $this->resourceResponse(
@@ -147,6 +148,7 @@ class BookDetailController extends Controller
                 (int) $book,
                 $request->validated(),
                 $request->file('file'),
+                $request->file('cover'),
             );
 
             return $this->resourceResponse(

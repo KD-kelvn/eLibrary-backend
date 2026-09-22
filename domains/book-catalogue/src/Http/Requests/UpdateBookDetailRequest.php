@@ -89,6 +89,7 @@ class UpdateBookDetailRequest extends FormRequest
                 'integer',
                 'min:1',
             ],
+            'file_cover' => ['prohibited'],
             'physical_book' => ['sometimes', 'nullable', 'array'],
             'physical_book.shelf_id' => [
                 'required_with:physical_book',
@@ -103,6 +104,14 @@ class UpdateBookDetailRequest extends FormRequest
             ],
             'physical_book.copies' => ['required_with:physical_book', 'integer', 'min:1'],
             'file' => ['sometimes', 'nullable', 'file', 'mimes:pdf,epub', 'max:102400'],
+            'cover' => [
+                'sometimes',
+                'nullable',
+                'file',
+                'image',
+                'mimes:jpeg,jpg,png,webp',
+                'max:5120',
+            ],
             'digital_book' => ['sometimes', 'nullable', 'array'],
             'digital_book.file_cover' => ['prohibited'],
             'digital_book.file_path' => ['prohibited'],

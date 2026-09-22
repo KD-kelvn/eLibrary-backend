@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Authentication\Http\Middleware\EnsureUserIsNotBlocked;
 use Modules\BookCatalogue\Http\Controllers\BookDetailController;
+use Modules\BookCatalogue\Http\Controllers\BookFavouriteController;
 use Modules\BookCatalogue\Http\Controllers\BookPageController;
 use Modules\BookCatalogue\Http\Controllers\Reusables\CategoryController;
 use Modules\BookCatalogue\Http\Controllers\Reusables\ReusableOptionsController;
@@ -12,6 +13,11 @@ use Modules\BookCatalogue\Http\Controllers\Reusables\TagController;
 
 Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class])->group(function () {
     Route::get('reusable-options', [ReusableOptionsController::class, 'index']);
+
+    Route::get('favourites', [BookFavouriteController::class, 'index']);
+    Route::post('favourites', [BookFavouriteController::class, 'store']);
+    Route::delete('favourites/{book}', [BookFavouriteController::class, 'destroy'])
+        ->whereNumber('book');
 
     Route::get('books/summary', [BookDetailController::class, 'summary']);
     Route::get('books/{book}/related', [BookDetailController::class, 'related'])

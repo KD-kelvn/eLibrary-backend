@@ -6,6 +6,7 @@ use App\Repositories\FilesRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Modules\BookCatalogue\Enums\BookTypeEnum;
 use Modules\BookCatalogue\Exceptions\BookCatalogueException;
 use Modules\BookCatalogue\Models\BookDetail;
@@ -77,10 +78,11 @@ class BookDetailService
         return $bookDetail;
     }
 
-    public function store(array $data, ?UploadedFile $file = null): BookDetail
+    public function store(array $data, ?UploadedFile $file = null, ?UploadedFile $cover = null): BookDetail
     {
-        return DB::transaction(function () use ($data, $file) {
+        return DB::transaction(function () use ($data, $file, $cover) {
             $data = $this->applyDigitalUpload($data, $file, requireFile: true);
+            $data = $this->applyCoverUpload($data, $cover);
 
             $bookDetail = $this->repository->create(collect($data)->only([
                 'type_code',
@@ -93,6 +95,7 @@ class BookDetailService
                 'edition',
                 'language',
                 'pages',
+                'file_cover',
             ])->all());
 
             $this->syncTypeRecord($bookDetail, $data);
@@ -103,11 +106,12 @@ class BookDetailService
         });
     }
 
-    public function update(int $id, array $data, ?UploadedFile $file = null): BookDetail
+    public function update(int $id, array $data, ?UploadedFile $file = null, ?UploadedFile $cover = null): BookDetail
     {
-        return DB::transaction(function () use ($id, $data, $file) {
+        return DB::transaction(function () use ($id, $data, $file, $cover) {
             $bookDetail = $this->findOrFail($id);
             $data = $this->applyDigitalUpload($data, $file, requireFile: false, existing: $bookDetail);
+            $data = $this->applyCoverUpload($data, $cover, $bookDetail);
 
             $this->repository->update($bookDetail, collect($data)->only([
                 'type_code',
@@ -120,6 +124,7 @@ class BookDetailService
                 'edition',
                 'language',
                 'pages',
+                'file_cover',
             ])->all());
 
             $bookDetail->refresh();
@@ -147,6 +152,7 @@ class BookDetailService
             if ($digital?->file_path) {
                 $this->files->delete($digital->file_path);
             }
+            $this->deleteCoverFile($bookDetail->file_cover ?: $digital?->file_cover);
 
             $this->repository->softDeletePhysicalBooks($bookDetail);
             $this->repository->softDeleteDigitalBook($bookDetail);
@@ -169,6 +175,30 @@ class BookDetailService
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
+    protected function applyCoverUpload(
+        array $data,
+        ?UploadedFile $cover,
+        ?BookDetail $existing = null,
+    ): array {
+        if (! $cover) {
+            if ($existing && ! array_key_exists('file_cover', $data)) {
+                $data['file_cover'] = $existing->file_cover;
+            }
+
+            return $data;
+        }
+
+        $storedCover = $this->files->saveFromUpload($cover, 'book-covers');
+        $this->deleteCoverFile($existing?->file_cover);
+        $data['file_cover'] = $storedCover['file_path'];
+
+        return $data;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
     protected function applyDigitalUpload(
         array $data,
         ?UploadedFile $file,
@@ -185,13 +215,14 @@ class BookDetailService
         }
 
         $digital = $data['digital_book'] ?? [];
+        $current = $existing?->digitalBook;
 
         if ($file) {
             $meta = $this->ebookMetadata->inspectUpload($file);
             $stored = $this->files->saveFromUpload($file, 'ebooks');
 
-            if ($existing?->digitalBook?->file_path) {
-                $this->files->delete($existing->digitalBook->file_path);
+            if ($current?->file_path) {
+                $this->files->delete($current->file_path);
             }
 
             $digital = array_merge($digital, [
@@ -204,20 +235,11 @@ class BookDetailService
             ]);
 
             $data['pages'] = $meta['pages'];
-            $data['digital_book'] = $digital;
-
-            return $data;
-        }
-
-        if ($requireFile) {
+        } elseif ($requireFile) {
             throw BookCatalogueException::unprocessable('An ebook file (PDF or EPUB) is required.');
-        }
-
-        // Keep existing file meta; allow toggling downloadable/active only.
-        if ($existing?->digitalBook) {
-            $current = $existing->digitalBook;
-            $data['digital_book'] = array_merge([
-                'file_cover' => $current->file_cover,
+        } elseif ($current) {
+            // Keep existing file meta; allow toggling downloadable/active only.
+            $digital = array_merge([
                 'file_path' => $current->file_path,
                 'file_name' => $current->file_name,
                 'file_type' => $current->file_type,
@@ -229,7 +251,34 @@ class BookDetailService
             ], $digital);
         }
 
+        $data['digital_book'] = $digital;
+
         return $data;
+    }
+
+    protected function deleteCoverFile(?string $fileCover): void
+    {
+        $path = $this->coverStoragePath($fileCover);
+        if ($path) {
+            $this->files->delete($path);
+        }
+    }
+
+    protected function coverStoragePath(?string $fileCover): ?string
+    {
+        if (! $fileCover) {
+            return null;
+        }
+
+        if (str_contains($fileCover, '/storage/')) {
+            return ltrim(Str::after($fileCover, '/storage/'), '/');
+        }
+
+        if (preg_match('#^https?://#i', $fileCover)) {
+            return null;
+        }
+
+        return ltrim($fileCover, '/');
     }
 
     /**
@@ -257,7 +306,6 @@ class BookDetailService
 
         if ($typeCode === BookTypeEnum::Digital && array_key_exists('digital_book', $data)) {
             $attributes = collect($data['digital_book'] ?? [])->only([
-                'file_cover',
                 'file_path',
                 'file_name',
                 'file_type',

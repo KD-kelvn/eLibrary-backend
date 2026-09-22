@@ -40,6 +40,15 @@ class IndexBookDetailRequest extends FormRequest
             'status' => ['nullable', Rule::in(['active', 'inactive'])],
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
+            'pub_year_from' => ['nullable', 'integer', 'digits:4', 'min:1000', 'max:9999'],
+            'pub_year_to' => [
+                'nullable',
+                'integer',
+                'digits:4',
+                'min:1000',
+                'max:9999',
+                'gte:pub_year_from',
+            ],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }

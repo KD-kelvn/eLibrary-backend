@@ -2,6 +2,7 @@
 
 namespace Modules\BookCatalogue\Http\Resources;
 
+use App\Support\PublicStorageUrl;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Request;
 use Modules\BookCatalogue\Models\DigitalBook;
@@ -20,7 +21,7 @@ class DigitalBookResource extends JsonResource
             'id' => $this->id,
             'bookDetailId' => $this->book_detail_id,
             'file' => [
-                'cover' => $this->file_cover,
+                'cover' => $this->resolveCoverUrl(),
                 // Storage path is never exposed — pages stream via /books/{id}/pages/{n}.
                 'name' => $this->file_name,
                 'type' => $this->file_type,
@@ -38,5 +39,10 @@ class DigitalBookResource extends JsonResource
             'createdAt' => $this->whenNotNull($this->created_at),
             'updatedAt' => $this->whenNotNull($this->updated_at),
         ];
+    }
+
+    protected function resolveCoverUrl(): ?string
+    {
+        return PublicStorageUrl::make($this->file_cover);
     }
 }

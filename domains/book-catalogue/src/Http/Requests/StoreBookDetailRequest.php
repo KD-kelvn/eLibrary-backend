@@ -77,6 +77,7 @@ class StoreBookDetailRequest extends FormRequest
             'edition' => ['nullable', 'string', 'max:255'],
             'language' => ['required', 'string', 'max:255'],
             'pages' => ['required_if:type_code,PHYSICAL', 'nullable', 'integer', 'min:1'],
+            'file_cover' => ['prohibited'],
             'physical_book' => ['required_if:type_code,PHYSICAL', 'array'],
             'physical_book.shelf_id' => [
                 'required_with:physical_book',
@@ -95,6 +96,13 @@ class StoreBookDetailRequest extends FormRequest
                 'file',
                 'mimes:pdf,epub',
                 'max:102400',
+            ],
+            'cover' => [
+                'nullable',
+                'file',
+                'image',
+                'mimes:jpeg,jpg,png,webp',
+                'max:5120',
             ],
             'digital_book' => ['required_if:type_code,DIGITAL', 'array'],
             'digital_book.file_cover' => ['prohibited'],

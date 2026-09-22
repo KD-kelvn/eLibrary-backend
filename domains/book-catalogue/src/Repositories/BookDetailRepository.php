@@ -84,6 +84,14 @@ class BookDetailRepository
                 filled($filters['date_to'] ?? null),
                 fn ($query) => $query->whereDate('created_at', '<=', $filters['date_to']),
             )
+            ->when(
+                filled($filters['pub_year_from'] ?? null),
+                fn ($query) => $query->where('pub_year', '>=', (int) $filters['pub_year_from']),
+            )
+            ->when(
+                filled($filters['pub_year_to'] ?? null),
+                fn ($query) => $query->where('pub_year', '<=', (int) $filters['pub_year_to']),
+            )
             ->latest('id')
             ->paginate($perPage);
     }

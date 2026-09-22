@@ -24,6 +24,7 @@ class BookDetail extends BaseModelWithAudits
         'edition',
         'language',
         'pages',
+        'file_cover',
     ];
 
     protected function casts(): array
