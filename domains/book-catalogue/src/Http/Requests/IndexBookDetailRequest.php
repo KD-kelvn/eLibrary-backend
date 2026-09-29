@@ -21,6 +21,7 @@ class IndexBookDetailRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string', 'max:255'],
+            'author' => ['nullable', 'string', 'max:255'],
             'type_code' => ['nullable', Rule::enum(BookTypeEnum::class)],
             'category_id' => [
                 'nullable',

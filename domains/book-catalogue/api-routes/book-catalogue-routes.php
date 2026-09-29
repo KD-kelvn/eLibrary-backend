@@ -2,14 +2,15 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Authentication\Http\Middleware\EnsureUserIsNotBlocked;
-use Modules\BookCatalogue\Http\Controllers\BookDetailController;
-use Modules\BookCatalogue\Http\Controllers\BookFavouriteController;
-use Modules\BookCatalogue\Http\Controllers\BookPageController;
 use Modules\BookCatalogue\Http\Controllers\Reusables\CategoryController;
 use Modules\BookCatalogue\Http\Controllers\Reusables\ReusableOptionsController;
 use Modules\BookCatalogue\Http\Controllers\Reusables\ShelfController;
 use Modules\BookCatalogue\Http\Controllers\Reusables\SubCategoryController;
 use Modules\BookCatalogue\Http\Controllers\Reusables\TagController;
+use Modules\BookCatalogue\Http\Controllers\BookAuthorController;
+use Modules\BookCatalogue\Http\Controllers\BookDetailController;
+use Modules\BookCatalogue\Http\Controllers\BookFavouriteController;
+use Modules\BookCatalogue\Http\Controllers\BookPageController;
 
 Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class])->group(function () {
     Route::get('reusable-options', [ReusableOptionsController::class, 'index']);
@@ -18,6 +19,8 @@ Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class])->group(functi
     Route::post('favourites', [BookFavouriteController::class, 'store']);
     Route::delete('favourites/{book}', [BookFavouriteController::class, 'destroy'])
         ->whereNumber('book');
+
+    Route::get('authors', [BookAuthorController::class, 'index']);
 
     Route::get('books/summary', [BookDetailController::class, 'summary']);
     Route::get('books/{book}/related', [BookDetailController::class, 'related'])

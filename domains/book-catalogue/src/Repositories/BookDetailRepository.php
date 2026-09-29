@@ -29,7 +29,16 @@ class BookDetailRepository
             ->withCount(['physicalBooks', 'readingHistories'])
             ->when(
                 filled($filters['search'] ?? null),
-                fn ($query) => $query->where('title', 'like', "%{$filters['search']}%"),
+                function ($query) use ($filters) {
+                    $term = '%'.mb_strtolower($filters['search']).'%';
+                    $query->where(fn ($builder) => $builder
+                        ->whereRaw('LOWER(title) LIKE ?', [$term])
+                        ->orWhereRaw('LOWER(authors) LIKE ?', [$term]));
+                },
+            )
+            ->when(
+                filled($filters['author'] ?? null),
+                fn ($query) => $query->whereRaw('LOWER(authors) = ?', [mb_strtolower($filters['author'])]),
             )
             ->when(
                 filled($filters['type_code'] ?? null),
@@ -58,14 +67,7 @@ class BookDetailRepository
             )
             ->when(
                 ($filters['status'] ?? null) === 'active',
-                fn ($query) => $query->where(function ($builder) {
-                    $builder
-                        ->where('type_code', 'PHYSICAL')
-                        ->orWhereHas(
-                            'digitalBook',
-                            fn ($digital) => $digital->where('is_active', true),
-                        );
-                }),
+                fn ($query) => $this->applyActiveScope($query),
             )
             ->when(
                 ($filters['status'] ?? null) === 'inactive',
@@ -94,6 +96,44 @@ class BookDetailRepository
             )
             ->latest('id')
             ->paginate($perPage);
+    }
+
+    /**
+     * Distinct authors of active books, most prolific first.
+     *
+     * @return Collection<int, BookDetail>
+     */
+    public function authors(?string $search, int $limit): Collection
+    {
+        return $this
+            ->model
+            ->newQuery()
+            ->selectRaw('authors, COUNT(*) as books_count, MAX(pub_year) as latest_pub_year')
+            ->tap(fn ($query) => $this->applyActiveScope($query))
+            ->when(
+                filled($search),
+                fn ($query) => $query->whereRaw('LOWER(authors) LIKE ?', ['%'.mb_strtolower($search).'%']),
+            )
+            ->groupBy('authors')
+            ->orderByDesc('books_count')
+            ->orderBy('authors')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Physical books are always browsable; digital ones only while active.
+     */
+    protected function applyActiveScope($query)
+    {
+        return $query->where(function ($builder) {
+            $builder
+                ->where('type_code', 'PHYSICAL')
+                ->orWhereHas(
+                    'digitalBook',
+                    fn ($digital) => $digital->where('is_active', true),
+                );
+        });
     }
 
     /**
