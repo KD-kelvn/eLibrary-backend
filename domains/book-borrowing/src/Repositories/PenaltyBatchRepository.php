@@ -10,14 +10,18 @@ use Modules\BookBorrowing\Models\PenaltyBatch;
 
 class PenaltyBatchRepository
 {
-    public function __construct(protected PenaltyBatch $model) {}
+    public function __construct(
+        protected PenaltyBatch $model
+    ) {}
 
     public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         $status = $filters['status'] ?? null;
         $tab = $filters['tab'] ?? 'all';
 
-        return $this->model->newQuery()
+        return $this
+            ->model
+            ->newQuery()
             ->with([
                 'borrowingRequest.user',
                 'borrowingRequest.book',
@@ -30,9 +34,11 @@ class PenaltyBatchRepository
                 function (Builder $query) use ($filters) {
                     $search = $filters['search'];
                     $query->where(function (Builder $builder) use ($search) {
-                        $builder->where('batch_no', 'like', "%{$search}%")
+                        $builder
+                            ->where('batch_no', 'like', "%{$search}%")
                             ->orWhereHas('borrowingRequest.user', function (Builder $userQuery) use ($search) {
-                                $userQuery->where('name', 'like', "%{$search}%")
+                                $userQuery
+                                    ->where('name', 'like', "%{$search}%")
                                     ->orWhere('email', 'like', "%{$search}%");
                             })
                             ->orWhereHas('borrowingRequest.book', function (Builder $bookQuery) use ($search) {
@@ -55,7 +61,9 @@ class PenaltyBatchRepository
 
     public function findById(int $id): ?PenaltyBatch
     {
-        return $this->model->newQuery()
+        return $this
+            ->model
+            ->newQuery()
             ->with([
                 'borrowingRequest.user',
                 'borrowingRequest.book',
@@ -67,9 +75,27 @@ class PenaltyBatchRepository
 
     public function pendingBatches(): Collection
     {
-        return $this->model->newQuery()
+        return $this
+            ->model
+            ->newQuery()
             ->with('borrowingRequest')
             ->where('status', PenaltyBatchStatusEnum::Pending)
+            ->get();
+    }
+
+    public function pendingForUser(int $userId, int $limit = 5): Collection
+    {
+        return $this
+            ->model
+            ->newQuery()
+            ->with('borrowingRequest.book')
+            ->withCount([
+                'penalties as unpaid_days_count' => fn (Builder $query) => $query->where('is_paid', false),
+            ])
+            ->where('status', PenaltyBatchStatusEnum::Pending)
+            ->whereHas('borrowingRequest', fn (Builder $query) => $query->where('user_id', $userId))
+            ->latest('id')
+            ->limit($limit)
             ->get();
     }
 

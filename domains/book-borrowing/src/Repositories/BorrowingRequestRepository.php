@@ -9,18 +9,23 @@ use Modules\BookBorrowing\Models\BorrowingRequest;
 
 class BorrowingRequestRepository
 {
-    public function __construct(protected BorrowingRequest $model) {}
+    public function __construct(
+        protected BorrowingRequest $model
+    ) {}
 
     public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
-        return $this->baseQuery($filters)
+        return $this
+            ->baseQuery($filters)
             ->latest('id')
             ->paginate($perPage);
     }
 
     public function findById(int $id): ?BorrowingRequest
     {
-        return $this->model->newQuery()
+        return $this
+            ->model
+            ->newQuery()
             ->with($this->defaultRelations())
             ->find($id);
     }
@@ -49,7 +54,9 @@ class BorrowingRequestRepository
      */
     public function overdueIssuedWithoutPendingBatch(\DateTimeInterface $overdueBefore): \Illuminate\Support\Collection
     {
-        return $this->model->newQuery()
+        return $this
+            ->model
+            ->newQuery()
             ->with(['latestProgress', 'penaltyBatches'])
             ->whereNotNull('end_date')
             ->where('end_date', '<', $overdueBefore)
@@ -64,14 +71,40 @@ class BorrowingRequestRepository
 
     public function countByLatestStatus(string $statusCode): int
     {
-        return $this->model->newQuery()
+        return $this
+            ->model
+            ->newQuery()
             ->whereHas('latestProgress', fn (Builder $query) => $query->where('status_code', $statusCode))
             ->count();
     }
 
+    /**
+     * Borrows still open for the member (requested, issued, or being returned), soonest due first.
+     *
+     * @return \Illuminate\Support\Collection<int, BorrowingRequest>
+     */
+    public function activeForUser(int $userId, int $limit = 5): \Illuminate\Support\Collection
+    {
+        return $this
+            ->model
+            ->newQuery()
+            ->with(['book', 'latestProgress.process'])
+            ->where('user_id', $userId)
+            ->whereHas('latestProgress', fn (Builder $query) => $query->whereIn('status_code', [
+                BorrowingProcessCodeEnum::Created->value,
+                BorrowingProcessCodeEnum::Approved->value,
+                BorrowingProcessCodeEnum::ReturnInitiated->value,
+            ]))
+            ->orderByRaw('end_date IS NULL, end_date ASC')
+            ->limit($limit)
+            ->get();
+    }
+
     public function countExpiringSoon(int $withinDays = 3): int
     {
-        return $this->model->newQuery()
+        return $this
+            ->model
+            ->newQuery()
             ->whereHas('latestProgress', fn (Builder $query) => $query->where(
                 'status_code',
                 BorrowingProcessCodeEnum::Approved->value,
@@ -86,7 +119,9 @@ class BorrowingRequestRepository
         $tab = $filters['tab'] ?? 'all';
         $statusCode = $filters['status_code'] ?? null;
 
-        return $this->model->newQuery()
+        return $this
+            ->model
+            ->newQuery()
             ->with($this->defaultRelations())
             ->when(
                 filled($filters['search'] ?? null),
@@ -94,10 +129,12 @@ class BorrowingRequestRepository
                     $search = $filters['search'];
                     $query->where(function (Builder $builder) use ($search) {
                         $builder->whereHas('user', function (Builder $userQuery) use ($search) {
-                            $userQuery->where('name', 'like', "%{$search}%")
+                            $userQuery
+                                ->where('name', 'like', "%{$search}%")
                                 ->orWhere('email', 'like', "%{$search}%");
                         })->orWhereHas('book', function (Builder $bookQuery) use ($search) {
-                            $bookQuery->where('title', 'like', "%{$search}%")
+                            $bookQuery
+                                ->where('title', 'like', "%{$search}%")
                                 ->orWhere('isbn', 'like', "%{$search}%");
                         });
                     });
@@ -124,7 +161,9 @@ class BorrowingRequestRepository
             );
     }
 
-    /** @return list<string|\Closure> */
+    /**
+     * @return list<string|\Closure>
+     */
     protected function defaultRelations(): array
     {
         return [

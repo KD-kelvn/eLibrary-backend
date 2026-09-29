@@ -2,6 +2,7 @@
 
 namespace Modules\BookReading\Services;
 
+use Modules\BookBorrowing\Services\MemberBorrowingSummaryService;
 use Modules\BookCatalogue\Http\Resources\MemberBookCardResource;
 use Modules\BookCatalogue\Services\BookFavouriteService;
 use Modules\BookReading\Models\ReadingHistory;
@@ -10,10 +11,11 @@ class MemberDashboardService
 {
     public function __construct(
         protected BookFavouriteService $favourites,
+        protected MemberBorrowingSummaryService $borrowings,
     ) {}
 
     /**
-     * @return array{lastRead: array<string, mixed>|null, favourites: mixed, favouriteIds: list<int>}
+     * @return array{lastRead: array<string, mixed>|null, favourites: mixed, favouriteIds: list<int>, activeBorrowings: list<array<string, mixed>>, activePenalties: list<array<string, mixed>>}
      */
     public function summary(int $userId): array
     {
@@ -41,6 +43,8 @@ class MemberDashboardService
             'lastRead' => $lastRead,
             'favourites' => MemberBookCardResource::collection($favouriteBooks)->resolve(),
             'favouriteIds' => $favouriteIds,
+            'activeBorrowings' => $this->borrowings->activeBorrowings($userId),
+            'activePenalties' => $this->borrowings->activePenalties($userId),
         ];
     }
 
