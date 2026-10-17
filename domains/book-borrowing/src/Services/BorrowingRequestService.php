@@ -4,10 +4,15 @@ namespace Modules\BookBorrowing\Services;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Modules\Authentication\Models\User;
 use Modules\BookBorrowing\Enums\BorrowingProcessCodeEnum;
+use Modules\BookBorrowing\Enums\PenaltyBatchStatusEnum;
 use Modules\BookBorrowing\Exceptions\BookBorrowingException;
 use Modules\BookBorrowing\Models\BorrowingRequest;
 use Modules\BookBorrowing\Repositories\BorrowingRequestRepository;
+use Modules\BookCatalogue\Enums\BookTypeEnum;
+use Modules\BookCatalogue\Models\BookDetail;
+use Modules\BookCatalogue\Models\PhysicalBook;
 
 class BorrowingRequestService
 {
@@ -25,6 +30,104 @@ class BorrowingRequestService
     public function show(int $id): BorrowingRequest
     {
         return $this->findOrFail($id);
+    }
+
+    public function storeForUser(int $userId, array $data): BorrowingRequest
+    {
+        return DB::transaction(function () use ($userId, $data) {
+            $user = User::query()->lockForUpdate()->find($userId);
+
+            if (! $user) {
+                throw BookBorrowingException::notFound('User');
+            }
+
+            $book = BookDetail::query()->find($data['book_id'] ?? null);
+
+            if (! $book) {
+                throw BookBorrowingException::notFound('Book');
+            }
+
+            if ($book->type_code !== BookTypeEnum::Physical) {
+                throw BookBorrowingException::unprocessable('Only physical books can be requested for borrowing.');
+            }
+
+            $physicalCopies = $book->physicalBooks()->lockForUpdate()->get();
+            $totalCopies = $physicalCopies->sum('copies');
+
+            if ($totalCopies < 1) {
+                throw BookBorrowingException::unprocessable('This book is currently unavailable for borrowing.');
+            }
+
+            $openRequestExists = BorrowingRequest::query()
+                ->where('user_id', $userId)
+                ->where('book_id', $book->id)
+                ->whereHas('latestProgress', function ($query) {
+                    $query->whereIn('status_code', [
+                        BorrowingProcessCodeEnum::Created->value,
+                        BorrowingProcessCodeEnum::Approved->value,
+                    ]);
+                })
+                ->exists();
+
+            if ($openRequestExists) {
+                throw BookBorrowingException::unprocessable('You already have an active borrowing request for this book.');
+            }
+
+            $issuedCount = BorrowingRequest::query()
+                ->where('user_id', $userId)
+                ->whereHas('latestProgress', fn ($query) => $query->whereIn('status_code', [
+                    BorrowingProcessCodeEnum::Created->value,
+                    BorrowingProcessCodeEnum::Approved->value,
+                ]))
+                ->count();
+
+            if ($issuedCount >= 2) {
+                throw BookBorrowingException::unprocessable('You have reached the maximum of 2 active borrowing requests or loans.');
+            }
+
+            $hasUnpaidPenalties = BorrowingRequest::query()
+                ->where('user_id', $userId)
+                ->whereHas('penaltyBatches', function ($query) {
+                    $query
+                        ->where('status', PenaltyBatchStatusEnum::Pending)
+                        ->whereHas('penalties', fn ($penaltyQuery) => $penaltyQuery->where('is_paid', false));
+                })
+                ->exists();
+
+            if ($hasUnpaidPenalties) {
+                throw BookBorrowingException::unprocessable('Please settle your unpaid fines before requesting another book.');
+            }
+
+            $openBookRequests = BorrowingRequest::query()
+                ->where('book_id', $book->id)
+                ->whereHas('latestProgress', fn ($query) => $query->whereIn('status_code', [
+                    BorrowingProcessCodeEnum::Created->value,
+                    BorrowingProcessCodeEnum::Approved->value,
+                ]))
+                ->count();
+
+            if ($openBookRequests >= $totalCopies) {
+                throw BookBorrowingException::unprocessable('All copies of this book are currently borrowed or reserved.');
+            }
+
+            $physicalBook = $physicalCopies->first();
+            $payload = [
+                'user_id' => $userId,
+                'book_id' => $book->id,
+                'book_type' => PhysicalBook::class,
+                'book_type_id' => $physicalBook->id,
+            ];
+
+            $request = $this->repository->create($payload);
+            $process = $this->processService->findByCode(BorrowingProcessCodeEnum::Created->value);
+            $this->progressService->record(
+                $request,
+                $process,
+                $data['remarks'] ?? 'Borrow request submitted by member.',
+            );
+
+            return $this->findOrFail($request->id);
+        });
     }
 
     public function approve(int $id, ?string $remarks = null, ?string $startDate = null, ?string $endDate = null): BorrowingRequest

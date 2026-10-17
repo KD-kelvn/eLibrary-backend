@@ -13,6 +13,11 @@ class BorrowingRequestPolicy
         return $user->hasActiveRole('admin', 'librarian');
     }
 
+    public function create(User $user): bool
+    {
+        return $user->hasActiveRole('student');
+    }
+
     public function view(User $user, BorrowingRequest $request): bool
     {
         return $user->hasActiveRole('admin', 'librarian')

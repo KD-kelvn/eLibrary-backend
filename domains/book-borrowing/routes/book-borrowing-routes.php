@@ -18,6 +18,7 @@ Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class])->group(functi
     Route::apiResource('penalty-policies', PenaltyPolicyController::class)
         ->parameters(['penalty-policies' => 'penalty_policy']);
 
+    Route::post('requests', [BorrowingRequestController::class, 'store']);
     Route::get('requests', [BorrowingRequestController::class, 'index']);
     Route::get('requests/{borrowing_request}', [BorrowingRequestController::class, 'show']);
     Route::post('requests/{borrowing_request}/approve', [BorrowingRequestController::class, 'approve']);

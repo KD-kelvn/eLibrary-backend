@@ -3,9 +3,11 @@
 namespace Modules\BookBorrowing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Modules\BookBorrowing\Exceptions\BookBorrowingException;
 use Modules\BookBorrowing\Http\Requests\IndexBorrowingRequestRequest;
+use Modules\BookBorrowing\Http\Requests\StoreBorrowingRequestRequest;
 use Modules\BookBorrowing\Http\Requests\TransitionBorrowingRequestRequest;
 use Modules\BookBorrowing\Http\Resources\BorrowingRequestResource;
 use Modules\BookBorrowing\Models\BorrowingRequest;
@@ -33,7 +35,30 @@ class BorrowingRequestController extends Controller
             );
         } catch (BookBorrowingException $exception) {
             return $this->handleBookBorrowingException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
+            return $this->failResponse(null, $exception->getMessage(), 403);
+        } catch (\Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), 500, $exception);
+        }
+    }
+
+    public function store(StoreBorrowingRequestRequest $request): JsonResponse
+    {
+        try {
+            $this->authorize('create', BorrowingRequest::class);
+
+            $model = $this->service->storeForUser(
+                (int) $request->user()->id,
+                $request->validated(),
+            );
+
+            return $this->resourceResponse(
+                BorrowingRequestResource::make($model),
+                'Borrowing request created.',
+            );
+        } catch (BookBorrowingException $exception) {
+            return $this->handleBookBorrowingException($exception);
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -52,7 +77,7 @@ class BorrowingRequestController extends Controller
             );
         } catch (BookBorrowingException $exception) {
             return $this->handleBookBorrowingException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -78,7 +103,7 @@ class BorrowingRequestController extends Controller
             );
         } catch (BookBorrowingException $exception) {
             return $this->handleBookBorrowingException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -102,7 +127,7 @@ class BorrowingRequestController extends Controller
             );
         } catch (BookBorrowingException $exception) {
             return $this->handleBookBorrowingException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -126,7 +151,7 @@ class BorrowingRequestController extends Controller
             );
         } catch (BookBorrowingException $exception) {
             return $this->handleBookBorrowingException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -144,7 +169,7 @@ class BorrowingRequestController extends Controller
             return $this->successResponse(null, 'Borrowing request deleted.');
         } catch (BookBorrowingException $exception) {
             return $this->handleBookBorrowingException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
