@@ -2,8 +2,9 @@
 
 namespace Modules\BookCatalogue\Http\Resources;
 
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Modules\BookCatalogue\Enums\PhysicalBookCopyStatusEnum;
 use Modules\BookCatalogue\Models\PhysicalBook;
 
 /**
@@ -22,6 +23,13 @@ class PhysicalBookResource extends JsonResource
             'shelfId' => $this->shelf_id,
             'codeNo' => $this->code_no,
             'copies' => $this->copies,
+            'availableCopies' => $this->whenLoaded(
+                'copyRecords',
+                fn () => $this->copyRecords
+                    ->where('status', PhysicalBookCopyStatusEnum::Available)
+                    ->count(),
+            ),
+            'copyRecords' => PhysicalBookCopyResource::collection($this->whenLoaded('copyRecords')),
             'bookDetail' => BookDetailSummaryResource::make($this->whenLoaded('bookDetail')),
             'shelf' => ShelfSummaryResource::make($this->whenLoaded('shelf')),
             'createdAt' => $this->whenNotNull($this->created_at),

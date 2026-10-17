@@ -5,11 +5,14 @@ namespace Modules\BookCatalogue\Services;
 use App\Repositories\FilesRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Modules\BookCatalogue\Enums\BookTypeEnum;
+use Modules\BookCatalogue\Enums\PhysicalBookCopyStatusEnum;
 use Modules\BookCatalogue\Exceptions\BookCatalogueException;
 use Modules\BookCatalogue\Models\BookDetail;
+use Modules\BookCatalogue\Models\PhysicalBook;
 use Modules\BookCatalogue\Repositories\BookDetailRepository;
 
 class BookDetailService
@@ -34,7 +37,7 @@ class BookDetailService
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, BookDetail>
+     * @return Collection<int, BookDetail>
      */
     public function related(int $id, int $limit = 6)
     {
@@ -264,6 +267,41 @@ class BookDetailService
         }
     }
 
+    protected function syncPhysicalCopies(PhysicalBook $physicalBook, int $targetCount): void
+    {
+        $copies = $physicalBook->copyRecords()->lockForUpdate()->get();
+        $currentCount = $copies->count();
+
+        if ($targetCount > $currentCount) {
+            $nextNumber = (int) $physicalBook->copyRecords()->withTrashed()->count() + 1;
+            $prefix = mb_substr((string) $physicalBook->code_no, 0, 220);
+
+            for ($number = $nextNumber; $number < $nextNumber + ($targetCount - $currentCount); $number++) {
+                $physicalBook->copyRecords()->create([
+                    'accession_number' => sprintf('%s-%d-%08d', $prefix, $physicalBook->id, $number),
+                    'status' => PhysicalBookCopyStatusEnum::Available,
+                ]);
+            }
+
+            return;
+        }
+
+        if ($targetCount < $currentCount) {
+            $availableCopies = $copies
+                ->where('status', PhysicalBookCopyStatusEnum::Available)
+                ->sortByDesc('id');
+            $removeCount = $currentCount - $targetCount;
+
+            if ($availableCopies->count() < $removeCount) {
+                throw BookCatalogueException::unprocessable(
+                    'Copy count cannot be lower than the number of copies currently on loan, lost, or damaged.',
+                );
+            }
+
+            $availableCopies->take($removeCount)->each->delete();
+        }
+    }
+
     protected function coverStoragePath(?string $fileCover): ?string
     {
         if (! $fileCover) {
@@ -295,13 +333,15 @@ class BookDetailService
                 'copies',
             ])->all();
 
-            $physicalBook = $bookDetail->physicalBooks()->first();
+            $physicalBook = $bookDetail->physicalBooks()->lockForUpdate()->first();
 
             if ($physicalBook) {
                 $this->repository->updatePhysicalBook($physicalBook, $attributes);
             } else {
-                $this->repository->createPhysicalBook($bookDetail, $attributes);
+                $physicalBook = $this->repository->createPhysicalBook($bookDetail, $attributes);
             }
+
+            $this->syncPhysicalCopies($physicalBook->refresh(), (int) ($attributes['copies'] ?? $physicalBook->copies));
         }
 
         if ($typeCode === BookTypeEnum::Digital && array_key_exists('digital_book', $data)) {

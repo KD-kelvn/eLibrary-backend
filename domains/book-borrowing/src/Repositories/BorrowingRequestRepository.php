@@ -4,6 +4,7 @@ namespace Modules\BookBorrowing\Repositories;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Modules\BookBorrowing\Enums\BorrowingProcessCodeEnum;
 use Modules\BookBorrowing\Models\BorrowingRequest;
 
@@ -50,9 +51,9 @@ class BorrowingRequestRepository
     /**
      * Issued borrows past overdue threshold with no open PENDING penalty batch.
      *
-     * @return \Illuminate\Support\Collection<int, BorrowingRequest>
+     * @return Collection<int, BorrowingRequest>
      */
-    public function overdueIssuedWithoutPendingBatch(\DateTimeInterface $overdueBefore): \Illuminate\Support\Collection
+    public function overdueIssuedWithoutPendingBatch(\DateTimeInterface $overdueBefore): Collection
     {
         return $this
             ->model
@@ -81,9 +82,9 @@ class BorrowingRequestRepository
     /**
      * Borrows still open for the member (requested, issued, or being returned), soonest due first.
      *
-     * @return \Illuminate\Support\Collection<int, BorrowingRequest>
+     * @return Collection<int, BorrowingRequest>
      */
-    public function activeForUser(int $userId, int $limit = 5): \Illuminate\Support\Collection
+    public function activeForUser(int $userId, int $limit = 5): Collection
     {
         return $this
             ->model
@@ -170,6 +171,7 @@ class BorrowingRequestRepository
             'user',
             'book',
             'bookType',
+            'physicalBookCopy',
             'latestProgress.process',
             'latestProgress.senderRole',
             'latestProgress.receiverRole',

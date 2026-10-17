@@ -2,8 +2,8 @@
 
 namespace Modules\BookBorrowing\Http\Resources;
 
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\Authentication\Http\Resources\UserResource;
 use Modules\BookBorrowing\Models\BorrowingRequest;
 use Modules\BookCatalogue\Http\Resources\BookDetailSummaryResource;
@@ -42,6 +42,17 @@ class BorrowingRequestResource extends JsonResource
                 }
 
                 return null;
+            }),
+            'physicalBookCopy' => $this->whenLoaded('physicalBookCopy', function () {
+                if (! $this->physicalBookCopy) {
+                    return null;
+                }
+
+                return [
+                    'id' => $this->physicalBookCopy->id,
+                    'accessionNumber' => $this->physicalBookCopy->accession_number,
+                    'status' => $this->physicalBookCopy->status?->value,
+                ];
             }),
             'startDate' => $this->start_date,
             'endDate' => $this->end_date,

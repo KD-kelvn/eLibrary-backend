@@ -4,6 +4,7 @@ namespace Modules\BookCatalogue\Models;
 
 use App\Models\BaseModelWithAudits;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PhysicalBook extends BaseModelWithAudits
 {
@@ -31,5 +32,10 @@ class PhysicalBook extends BaseModelWithAudits
     public function shelf(): BelongsTo
     {
         return $this->belongsTo(Shelf::class, 'shelf_id', 'id');
+    }
+
+    public function copyRecords(): HasMany
+    {
+        return $this->hasMany(PhysicalBookCopy::class, 'physical_book_id');
     }
 }

@@ -21,6 +21,7 @@ class BookDetailRepository
             ->newQuery()
             ->with([
                 'physicalBooks.shelf',
+                'physicalBooks.copyRecords',
                 'digitalBook',
                 'categories',
                 'subCategories',
@@ -236,6 +237,7 @@ class BookDetailRepository
             ->newQuery()
             ->with([
                 'physicalBooks.shelf',
+                'physicalBooks.copyRecords',
                 'digitalBook',
                 'categories',
                 'subCategories',

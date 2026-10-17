@@ -11,8 +11,9 @@ use Modules\BookBorrowing\Exceptions\BookBorrowingException;
 use Modules\BookBorrowing\Models\BorrowingRequest;
 use Modules\BookBorrowing\Repositories\BorrowingRequestRepository;
 use Modules\BookCatalogue\Enums\BookTypeEnum;
+use Modules\BookCatalogue\Enums\PhysicalBookCopyStatusEnum;
 use Modules\BookCatalogue\Models\BookDetail;
-use Modules\BookCatalogue\Models\PhysicalBook;
+use Modules\BookCatalogue\Models\PhysicalBookCopy;
 
 class BorrowingRequestService
 {
@@ -51,10 +52,15 @@ class BorrowingRequestService
                 throw BookBorrowingException::unprocessable('Only physical books can be requested for borrowing.');
             }
 
-            $physicalCopies = $book->physicalBooks()->lockForUpdate()->get();
-            $totalCopies = $physicalCopies->sum('copies');
+            $physicalBooks = $book->physicalBooks()->lockForUpdate()->get();
+            $availableCopies = PhysicalBookCopy::query()
+                ->whereIn('physical_book_id', $physicalBooks->modelKeys())
+                ->where('status', PhysicalBookCopyStatusEnum::Available)
+                ->lockForUpdate()
+                ->get(['id'])
+                ->count();
 
-            if ($totalCopies < 1) {
+            if ($availableCopies < 1) {
                 throw BookBorrowingException::unprocessable('This book is currently unavailable for borrowing.');
             }
 
@@ -98,23 +104,23 @@ class BorrowingRequestService
                 throw BookBorrowingException::unprocessable('Please settle your unpaid fines before requesting another book.');
             }
 
-            $openBookRequests = BorrowingRequest::query()
+            $pendingBookRequests = BorrowingRequest::query()
                 ->where('book_id', $book->id)
-                ->whereHas('latestProgress', fn ($query) => $query->whereIn('status_code', [
+                ->whereHas('latestProgress', fn ($query) => $query->where(
+                    'status_code',
                     BorrowingProcessCodeEnum::Created->value,
-                    BorrowingProcessCodeEnum::Approved->value,
-                ]))
+                ))
                 ->count();
 
-            if ($openBookRequests >= $totalCopies) {
+            if ($pendingBookRequests >= $availableCopies) {
                 throw BookBorrowingException::unprocessable('All copies of this book are currently borrowed or reserved.');
             }
 
-            $physicalBook = $physicalCopies->first();
+            $physicalBook = $physicalBooks->first();
             $payload = [
                 'user_id' => $userId,
                 'book_id' => $book->id,
-                'book_type' => PhysicalBook::class,
+                'book_type' => $physicalBook::class,
                 'book_type_id' => $physicalBook->id,
             ];
 
@@ -136,10 +142,23 @@ class BorrowingRequestService
             $request = $this->findOrFail($id);
             $this->assertLatestStatus($request, BorrowingProcessCodeEnum::Created);
 
+            $physicalBookIds = $request->book?->physicalBooks()->lockForUpdate()->pluck('id') ?? collect();
+            $copy = PhysicalBookCopy::query()
+                ->whereIn('physical_book_id', $physicalBookIds)
+                ->where('status', PhysicalBookCopyStatusEnum::Available)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $copy) {
+                throw BookBorrowingException::unprocessable('No available copy remains for this request.');
+            }
+
             $process = $this->processService->findByCode(BorrowingProcessCodeEnum::Approved->value);
             $this->progressService->record($request, $process, $remarks);
+            $copy->update(['status' => PhysicalBookCopyStatusEnum::OnLoan]);
 
             $attributes = [];
+            $attributes['physical_book_copy_id'] = $copy->id;
             if ($startDate) {
                 $attributes['start_date'] = $startDate;
             } elseif (! $request->start_date) {
@@ -149,9 +168,7 @@ class BorrowingRequestService
                 $attributes['end_date'] = $endDate;
             }
 
-            if ($attributes !== []) {
-                $this->repository->update($request, $attributes);
-            }
+            $this->repository->update($request, $attributes);
 
             return $this->findOrFail($id);
         });
@@ -176,8 +193,17 @@ class BorrowingRequestService
             $request = $this->findOrFail($id);
             $this->assertLatestStatus($request, BorrowingProcessCodeEnum::Approved);
 
+            $copy = PhysicalBookCopy::query()
+                ->lockForUpdate()
+                ->find($request->physical_book_copy_id);
+
+            if (! $copy || $copy->status !== PhysicalBookCopyStatusEnum::OnLoan) {
+                throw BookBorrowingException::unprocessable('The issued copy could not be located for return.');
+            }
+
             $process = $this->processService->findByCode(BorrowingProcessCodeEnum::BookReturned->value);
             $this->progressService->record($request, $process, $remarks);
+            $copy->update(['status' => PhysicalBookCopyStatusEnum::Available]);
 
             return $this->findOrFail($id);
         });

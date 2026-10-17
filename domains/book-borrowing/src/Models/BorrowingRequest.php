@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Modules\Authentication\Models\User;
 use Modules\BookCatalogue\Models\BookDetail;
+use Modules\BookCatalogue\Models\PhysicalBookCopy;
 
 class BorrowingRequest extends BaseModelWithAudits
 {
@@ -19,6 +20,7 @@ class BorrowingRequest extends BaseModelWithAudits
         'book_id',
         'book_type',
         'book_type_id',
+        'physical_book_copy_id',
         'start_date',
         'end_date',
         'created_by',
@@ -50,6 +52,11 @@ class BorrowingRequest extends BaseModelWithAudits
     public function bookType(): MorphTo
     {
         return $this->morphTo(__FUNCTION__, 'book_type', 'book_type_id');
+    }
+
+    public function physicalBookCopy(): BelongsTo
+    {
+        return $this->belongsTo(PhysicalBookCopy::class, 'physical_book_copy_id');
     }
 
     public function progresses(): HasMany
