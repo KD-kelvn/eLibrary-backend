@@ -38,6 +38,13 @@ return [
             'report' => false,
         ],
 
+        'ebooks' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private'),
+            'throw' => true,
+            'report' => true,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

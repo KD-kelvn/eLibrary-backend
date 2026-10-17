@@ -115,10 +115,10 @@ class BookPageService
             return 1;
         }
 
-        $absolute = Storage::disk('public')->path($storedPath);
-        if (! is_file($absolute)) {
+        if (! Storage::disk('ebooks')->exists($storedPath)) {
             return 1;
         }
+        $absolute = Storage::disk('ebooks')->path($storedPath);
 
         $zip = new ZipArchive;
         if ($zip->open($absolute) !== true) {
@@ -154,7 +154,15 @@ class BookPageService
      */
     protected function extractPagePayload(string $storedPath, EbookFormatEnum $format, int $page): array
     {
-        $absolute = Storage::disk('public')->path($storedPath);
+        if (! Storage::disk('ebooks')->exists($storedPath)) {
+            return [
+                'contentType' => $format->mimeType(),
+                'content' => null,
+                'contentAvailable' => false,
+            ];
+        }
+
+        $absolute = Storage::disk('ebooks')->path($storedPath);
 
         if (! is_file($absolute)) {
             return [

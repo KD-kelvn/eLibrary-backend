@@ -86,7 +86,7 @@ class BookDetailController extends Controller
 
             $file = $this->bookDetailService->downloadPath((int) $book);
 
-            return Storage::disk('public')->download(
+            return Storage::disk('ebooks')->download(
                 $file['path'],
                 $file['name'],
                 ['Content-Type' => $file['type']],

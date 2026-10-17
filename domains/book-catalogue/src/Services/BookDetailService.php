@@ -59,7 +59,7 @@ class BookDetailService
             throw BookCatalogueException::forbidden('Downloads are not allowed for this title.');
         }
 
-        if (! $this->files->existsOnDisk($digital->file_path)) {
+        if (! $this->files->existsOnDisk($digital->file_path, 'ebooks')) {
             throw BookCatalogueException::notFound('Ebook file');
         }
 
@@ -153,7 +153,8 @@ class BookDetailService
         DB::transaction(function () use ($bookDetail) {
             $digital = $bookDetail->digitalBook;
             if ($digital?->file_path) {
-                $this->files->delete($digital->file_path);
+                $disk = $this->files->existsOnDisk($digital->file_path, 'ebooks') ? 'ebooks' : 'public';
+                $this->files->delete($digital->file_path, $disk);
             }
             $this->deleteCoverFile($bookDetail->file_cover ?: $digital?->file_cover);
 
@@ -222,10 +223,11 @@ class BookDetailService
 
         if ($file) {
             $meta = $this->ebookMetadata->inspectUpload($file);
-            $stored = $this->files->saveFromUpload($file, 'ebooks');
+            $stored = $this->files->saveFromUpload($file, 'ebooks', disk: 'ebooks');
 
             if ($current?->file_path) {
-                $this->files->delete($current->file_path);
+                $disk = $this->files->existsOnDisk($current->file_path, 'ebooks') ? 'ebooks' : 'public';
+                $this->files->delete($current->file_path, $disk);
             }
 
             $digital = array_merge($digital, [

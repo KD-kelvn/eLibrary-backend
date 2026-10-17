@@ -5,6 +5,7 @@ namespace Modules\BookCatalogue\Providers;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Modules\BookCatalogue\Console\Commands\SecureDigitalBookStorageCommand;
 use Modules\BookCatalogue\Models\BookDetail;
 use Modules\BookCatalogue\Models\BookFavourite;
 use Modules\BookCatalogue\Models\Category;
@@ -29,6 +30,10 @@ class BookCatalogueServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
 
         $this->registerPolicies();
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([SecureDigitalBookStorageCommand::class]);
+        }
 
         Route::middleware('api')
             ->prefix('api/book-catalogue')
