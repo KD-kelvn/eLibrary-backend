@@ -8,6 +8,7 @@ use Modules\Authentication\Models\User;
 use Modules\BookBorrowing\Enums\BorrowingProcessCodeEnum;
 use Modules\BookBorrowing\Enums\PenaltyBatchStatusEnum;
 use Modules\BookBorrowing\Exceptions\BookBorrowingException;
+use App\Support\ApiErrorCode;
 use Modules\BookBorrowing\Models\BorrowingRequest;
 use Modules\BookBorrowing\Repositories\BorrowingRequestRepository;
 use Modules\BookCatalogue\Enums\BookTypeEnum;
@@ -49,7 +50,10 @@ class BorrowingRequestService
             }
 
             if ($book->type_code !== BookTypeEnum::Physical) {
-                throw BookBorrowingException::unprocessable('Only physical books can be requested for borrowing.');
+                throw BookBorrowingException::unprocessable(
+                    'Only physical books can be requested for borrowing.',
+                    ApiErrorCode::NOT_PHYSICAL_BOOK,
+                );
             }
 
             $physicalBooks = $book->physicalBooks()->lockForUpdate()->get();
@@ -61,7 +65,10 @@ class BorrowingRequestService
                 ->count();
 
             if ($availableCopies < 1) {
-                throw BookBorrowingException::unprocessable('This book is currently unavailable for borrowing.');
+                throw BookBorrowingException::unprocessable(
+                    'This book is currently unavailable for borrowing.',
+                    ApiErrorCode::BOOK_UNAVAILABLE,
+                );
             }
 
             $openRequestExists = BorrowingRequest::query()
@@ -76,7 +83,10 @@ class BorrowingRequestService
                 ->exists();
 
             if ($openRequestExists) {
-                throw BookBorrowingException::unprocessable('You already have an active borrowing request for this book.');
+                throw BookBorrowingException::unprocessable(
+                    'You already have an active borrowing request for this book.',
+                    ApiErrorCode::DUPLICATE_REQUEST,
+                );
             }
 
             $issuedCount = BorrowingRequest::query()
@@ -88,7 +98,10 @@ class BorrowingRequestService
                 ->count();
 
             if ($issuedCount >= 2) {
-                throw BookBorrowingException::unprocessable('You have reached the maximum of 2 active borrowing requests or loans.');
+                throw BookBorrowingException::unprocessable(
+                    'You have reached the maximum of 2 active borrowing requests or loans.',
+                    ApiErrorCode::LOAN_LIMIT,
+                );
             }
 
             $hasUnpaidPenalties = BorrowingRequest::query()
@@ -101,7 +114,10 @@ class BorrowingRequestService
                 ->exists();
 
             if ($hasUnpaidPenalties) {
-                throw BookBorrowingException::unprocessable('Please settle your unpaid fines before requesting another book.');
+                throw BookBorrowingException::unprocessable(
+                    'Please settle your unpaid fines before requesting another book.',
+                    ApiErrorCode::UNPAID_FINES,
+                );
             }
 
             $pendingBookRequests = BorrowingRequest::query()
@@ -113,7 +129,10 @@ class BorrowingRequestService
                 ->count();
 
             if ($pendingBookRequests >= $availableCopies) {
-                throw BookBorrowingException::unprocessable('All copies of this book are currently borrowed or reserved.');
+                throw BookBorrowingException::unprocessable(
+                    'All copies of this book are currently borrowed or reserved.',
+                    ApiErrorCode::BOOK_UNAVAILABLE,
+                );
             }
 
             $physicalBook = $physicalBooks->first();

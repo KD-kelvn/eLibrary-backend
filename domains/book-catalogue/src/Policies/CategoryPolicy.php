@@ -25,16 +25,20 @@ class CategoryPolicy
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasActiveRole('admin', 'librarian');
     }
 
     public function update(User $user, Category $category): bool
     {
-        return true;
+        return $user->hasActiveRole('admin', 'librarian');
     }
 
     public function delete(User $user, Category $category): bool
     {
+        if (! $user->hasActiveRole('admin', 'librarian')) {
+            return false;
+        }
+
         return $this->repository->countBooks($category) === 0;
     }
 }

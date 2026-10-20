@@ -12,11 +12,11 @@ class SystemModuleRolePolicy
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 
     public function delete(User $user, SystemModuleRole $assignment): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 }

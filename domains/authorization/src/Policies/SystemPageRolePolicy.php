@@ -12,11 +12,11 @@ class SystemPageRolePolicy
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 
     public function delete(User $user, SystemPageRole $assignment): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 }

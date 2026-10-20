@@ -25,16 +25,20 @@ class ShelfPolicy
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasActiveRole('admin', 'librarian');
     }
 
     public function update(User $user, Shelf $shelf): bool
     {
-        return true;
+        return $user->hasActiveRole('admin', 'librarian');
     }
 
     public function delete(User $user, Shelf $shelf): bool
     {
+        if (! $user->hasActiveRole('admin', 'librarian')) {
+            return false;
+        }
+
         return $this->repository->countPhysicalBooks($shelf) === 0;
     }
 }
