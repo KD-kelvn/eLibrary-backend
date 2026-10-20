@@ -1,42 +1,17 @@
 # Contributing (backend)
 
-Umbrella docs (preferred):
+The canonical guide is **[`design/CONTRIBUTING.md`](../design/CONTRIBUTING.md)** (branching in [`design/BRANCHING.md`](../design/BRANCHING.md), standards in [`design/ENGINEERING-STANDARDS.md`](../design/ENGINEERING-STANDARDS.md)). This file only adds backend-specific notes.
 
-- Branching: `design/BRANCHING.md` — `main` / `develop` / `feature/*` / `hotfix/*` / `chore/*`
-- Standards: `design/ENGINEERING-STANDARDS.md`
-- Process: `design/CONTRIBUTING.md`
-
-## Branch cheat sheet
+## Backend checks before a PR
 
 ```bash
-git fetch origin
-git checkout develop && git pull
-git checkout -b feature/t-01-loan-rules
-# … work …
-git push -u origin HEAD
-# Open PR → develop
-```
-
-Hotfix:
-
-```bash
-git checkout main && git pull
-git checkout -b hotfix/critical-auth
-# PR → main, then merge/PR back into develop
-```
-
-## Quick checks
-
-```bash
-composer install
 vendor/bin/pint --test
 php artisan test
 ```
 
-## Architecture
+## Backend-specific rules
 
-Domain modules under `domains/*`. Request lifecycle:
-
-`Route → Controller → FormRequest → Service → Repository → Resource`
-
-Policies must use `$user->hasActiveRole(...)` for mutations. Do not add `return true` mutate abilities.
+- New code goes in a domain module under `domains/*`, not `app/`.
+- Policies use `$user->hasActiveRole(...)` for create/update/delete; `return true` is allowed only for `viewAny`/`view` on public catalogue data.
+- Validation rules referencing PostgreSQL schemas go through `SchemaTable::forValidation('schema.table')`.
+- New migrations, seeders or env keys must be called out in the PR and added to `README.md`.

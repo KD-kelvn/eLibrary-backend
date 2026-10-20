@@ -1,3 +1,35 @@
+# eLibraryV2 backend — agent guide (project-specific)
+
+Read this section first. It overrides the generic Laravel Boost guidelines below wherever they differ.
+
+## What this is
+Laravel 12 API for eLibraryV2 (Librarian / Member / Admin). Domain modules under `domains/*` (`internachi/modular`); PostgreSQL with one schema per domain (`auth`, `book_catalog`, `book_borrowing`, `settings`). SPA is the separate `frontend` repo; docs are the separate `design` repo at `../design/`.
+
+## Read before coding
+1. `../design/README.md` (doc map), `../design/ENGINEERING-STANDARDS.md`, `../design/IMPLEMENTATION-BACKLOG.md` (next ticket T-01…T-07)
+2. `../design/LIBRARY-POLICY.md` for business rules (LP-*) and `../design/GLOSSARY.md` for names
+3. `../.cursor/rules/backend-architecture.mdc` for the layer rules
+
+## Precedence
+User instruction > `design/` docs > `.cursor/rules/*.mdc` > this project section > Laravel Boost guidelines and skills (`.cursor|.claude|.junie/skills`).
+
+## Rules that differ from generic Laravel advice
+- Domain logic lives in `domains/<domain>/src`, never in `app/` (`app/` is cross-cutting glue only).
+- Route → Controller (thin, try/catch to JSON envelope) → FormRequest (validation + policy) → Service (business rules) → Repository (Eloquent only) → Resource (camelCase).
+- Policies: role-checked mutations; `return true` only for `viewAny`/`view`.
+- Use `SchemaTable::forValidation('book_catalog.tags')` in `unique`/`exists` rules.
+- Domain errors return a machine-readable `code` from `App\Support\ApiErrorCode`.
+- Library limits come from config/settings, not literals (the hard-coded loan limit of 2 is T-01).
+- Member = role code `student`.
+
+## Commands
+`composer run dev` · `php artisan test` · `vendor/bin/pint --test` · `php artisan route:list --except-vendor`
+
+## Workflow
+Branch from `develop` (`feature/t-0x-…`, `fix/…`, `docs/…`), Conventional Commits with `Refs: T-0x, FR x.y`, PR into `develop`; never commit to or push `main`. When behaviour changes, update `../design/TRACEABILITY.md` (status, Tests, Verified at).
+
+---
+
 <laravel-boost-guidelines>
 === foundation rules ===
 
