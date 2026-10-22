@@ -47,6 +47,7 @@ class LibrarianPermissionSeeder extends Seeder
                 'sort_order' => 30,
                 'items' => [
                     ['name' => 'Requests', 'code' => 'librarian-borrowing-requests', 'route' => '/librarian/borrowing/requests', 'sort_order' => 10],
+                    ['name' => 'Returns & overdue', 'code' => 'librarian-borrowing-returns', 'route' => '/librarian/borrowing/returns', 'sort_order' => 15],
                     ['name' => 'Penalties', 'code' => 'librarian-penalties', 'route' => '/librarian/borrowing/penalties', 'sort_order' => 20],
                 ],
             ],

@@ -42,6 +42,7 @@ class MenuWorkspaceSeeder extends Seeder
             'librarian-books' => 'manage-catalog',
             'librarian-dashboard-home' => 'circulation',
             'librarian-borrowing-requests' => 'circulation',
+            'librarian-borrowing-returns' => 'circulation',
             'librarian-penalties' => 'circulation',
             'librarian-readings-history' => 'circulation',
             'librarian-reports' => 'circulation',
