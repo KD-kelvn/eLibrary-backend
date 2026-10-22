@@ -30,6 +30,7 @@ class MenuWorkspaceSeeder extends Seeder
             'system-workspaces' => 'access-management',
             'readings-history' => 'access-management',
             'reports' => 'access-management',
+            'audit-log' => 'access-management',
             'appearance' => 'system-settings',
             'login-slider' => 'system-settings',
             'borrowing-processes' => 'system-settings',
