@@ -69,6 +69,15 @@ class AdminPermissionSeeder extends Seeder
                 ],
             ],
             [
+                'name' => 'Audit',
+                'code' => 'audit',
+                'icon_code' => 'audit',
+                'sort_order' => 55,
+                'items' => [
+                    ['name' => 'Audit log', 'code' => 'audit-log', 'route' => '/admin/audit', 'sort_order' => 10],
+                ],
+            ],
+            [
                 'name' => 'Settings',
                 'code' => 'settings',
                 'icon_code' => 'settings',
