@@ -38,7 +38,10 @@ jobs:
         run: vendor/bin/pint --test
 
       - name: PHPUnit
-        run: php artisan test
+        # Generate a disposable APP_KEY at job time (never committed).
+        run: |
+          export APP_KEY="base64:$(openssl rand -base64 32)"
+          php artisan test
         env:
           APP_ENV: testing
           DB_CONNECTION: sqlite

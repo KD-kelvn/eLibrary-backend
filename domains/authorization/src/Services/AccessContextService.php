@@ -2,8 +2,8 @@
 
 namespace Modules\Authorization\Services;
 
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 use Modules\Authentication\Models\User;
 use Modules\Authorization\Enums\RoleStatusEnum;

@@ -2,13 +2,13 @@
 
 namespace Modules\Authentication\Services;
 
+use App\Support\AdminActivity;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Modules\Authentication\Exceptions\AuthenticationException;
 use Modules\Authentication\Models\User;
 use Modules\Authentication\Repositories\UserProfileRepository;
 use Modules\Authentication\Repositories\UserRepository;
-use App\Support\AdminActivity;
 use Modules\Authorization\Enums\RoleStatusEnum;
 use Modules\Authorization\Models\Role;
 use Modules\Authorization\Models\UserRole;

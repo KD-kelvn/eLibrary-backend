@@ -3,8 +3,8 @@
 namespace Modules\Authorization\Services\AccessManagement;
 
 use App\Support\AdminActivity;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Modules\Authentication\Models\User;
 use Modules\Authorization\Exceptions\AuthorizationException;
 use Modules\Authorization\Models\SystemAction;
