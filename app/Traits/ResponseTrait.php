@@ -17,10 +17,16 @@ trait ResponseTrait
         ], $code);
     }
 
-    public function failResponse($data, $message = '', $code = 200, ?\Exception $e = null): JsonResponse
-    {
+    public function failResponse(
+        $data,
+        $message = '',
+        $code = 200,
+        ?\Exception $e = null,
+        ?string $errorCode = null,
+    ): JsonResponse {
         Log::error($message, [
             'message' => $message,
+            'error_code' => $errorCode,
             'file' => $e?->getFile(),
             'line' => $e?->getLine(),
             'trace' => $e?->getTraceAsString(),
@@ -29,6 +35,7 @@ trait ResponseTrait
         return response()->json([
             'status' => 'fail',
             'message' => $message,
+            'code' => $errorCode,
             'data' => $data,
             'errors' => null,
         ], $code);
@@ -40,6 +47,7 @@ trait ResponseTrait
             return response()->json([
                 'status' => 'error',
                 'message' => $message,
+                'code' => null,
                 'data' => null,
                 'errors' => null,
             ], $code);
@@ -60,6 +68,7 @@ trait ResponseTrait
         return response()->json([
             'status' => 'error',
             'message' => $message,
+            'code' => property_exists($exception, 'errorCode') ? $exception->errorCode : null,
             'data' => null,
             'errors' => null,
         ], $code);

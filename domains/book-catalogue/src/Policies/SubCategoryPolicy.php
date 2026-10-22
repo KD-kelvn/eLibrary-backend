@@ -25,16 +25,20 @@ class SubCategoryPolicy
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasActiveRole('admin', 'librarian');
     }
 
     public function update(User $user, SubCategory $subCategory): bool
     {
-        return true;
+        return $user->hasActiveRole('admin', 'librarian');
     }
 
     public function delete(User $user, SubCategory $subCategory): bool
     {
+        if (! $user->hasActiveRole('admin', 'librarian')) {
+            return false;
+        }
+
         return $this->repository->countBooks($subCategory) === 0;
     }
 }

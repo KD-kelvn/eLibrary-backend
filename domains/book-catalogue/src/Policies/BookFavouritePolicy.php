@@ -23,7 +23,7 @@ class BookFavouritePolicy
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasActiveRole('student', 'admin', 'librarian');
     }
 
     public function delete(User $user, BookFavourite $favourite): bool

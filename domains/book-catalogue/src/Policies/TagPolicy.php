@@ -25,16 +25,20 @@ class TagPolicy
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasActiveRole('admin', 'librarian');
     }
 
     public function update(User $user, Tag $tag): bool
     {
-        return true;
+        return $user->hasActiveRole('admin', 'librarian');
     }
 
     public function delete(User $user, Tag $tag): bool
     {
+        if (! $user->hasActiveRole('admin', 'librarian')) {
+            return false;
+        }
+
         return $this->repository->countBooks($tag) === 0;
     }
 }

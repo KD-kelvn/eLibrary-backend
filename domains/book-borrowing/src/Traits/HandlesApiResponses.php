@@ -38,11 +38,11 @@ trait HandlesApiResponses
         $code = $exception->getCode();
 
         if ($code === 404) {
-            return $this->failResponse(null, $exception->getMessage(), 404);
+            return $this->failResponse(null, $exception->getMessage(), 404, $exception, $exception->errorCode);
         }
 
         if (in_array($code, [403, 422], true)) {
-            return $this->failResponse(null, $exception->getMessage(), $code);
+            return $this->failResponse(null, $exception->getMessage(), $code, $exception, $exception->errorCode);
         }
 
         return $this->errorResponse($exception->getMessage(), $code ?: 500, $exception);

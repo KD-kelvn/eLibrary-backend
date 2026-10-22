@@ -12,26 +12,26 @@ class SystemPagePolicy
 
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 
     public function view(User $user, SystemPage $page): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 
     public function update(User $user, SystemPage $page): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 
     public function delete(User $user, SystemPage $page): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 }
