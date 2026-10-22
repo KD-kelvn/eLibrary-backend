@@ -124,7 +124,11 @@ Each layer has one job: Route → Controller → FormRequest → Service → Rep
 
 - SemVer in root `VERSION`; exposed as `config('app.version')` (override with `APP_VERSION`).
 - Git tags on `main`: `vX.Y.Z` (see `design/BRANCHING.md` and `design/VERSIONING.md`).
-- Current baseline: **0.0.0**.
+- Current baseline: see root `VERSION`.
+
+## Security
+
+Do not commit `APP_KEY` or other secrets. See [`SECURITY.md`](./SECURITY.md).
 
 ## Design docs
 
