@@ -34,7 +34,7 @@ class LoginSlideController extends Controller
         try {
             $this->authorize('viewAny', LoginSlide::class);
 
-                        return $this->successResponse(
+            return $this->successResponse(
                 LoginSlideResource::collection($this->loginSlideService->all())->resolve(),
                 'Login slides retrieved.',
             );

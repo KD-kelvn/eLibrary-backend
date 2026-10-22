@@ -349,9 +349,6 @@ class BookPageService
             .'</div>';
     }
 
-    /**
-     * @return string|false
-     */
     protected function readZipEntry(ZipArchive $zip, string $path): string|false
     {
         $candidates = array_values(array_unique([
@@ -405,6 +402,7 @@ class BookPageService
             }
             if ($part === '..') {
                 array_pop($stack);
+
                 continue;
             }
             $stack[] = $part;

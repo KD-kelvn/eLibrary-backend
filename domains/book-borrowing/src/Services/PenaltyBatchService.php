@@ -3,6 +3,7 @@
 namespace Modules\BookBorrowing\Services;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Modules\BookBorrowing\Enums\PenaltyBatchStatusEnum;
@@ -66,7 +67,7 @@ class PenaltyBatchService
      */
     public function generateDailyPenalties(\DateTimeInterface|string|null $forDate = null): int
     {
-        $date = ($forDate ? \Illuminate\Support\Carbon::parse($forDate) : now())->toDateString();
+        $date = ($forDate ? Carbon::parse($forDate) : now())->toDateString();
         $created = 0;
 
         foreach ($this->repository->pendingBatches() as $batch) {

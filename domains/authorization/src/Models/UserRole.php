@@ -3,9 +3,9 @@
 namespace Modules\Authorization\Models;
 
 use App\Models\BaseModelWithAudits;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Builder;
 use Modules\Authentication\Models\User;
 
 class UserRole extends BaseModelWithAudits

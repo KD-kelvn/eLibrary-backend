@@ -2,14 +2,14 @@
 
 namespace Modules\Authentication\Providers;
 
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\Sanctum;
-use Modules\Authentication\Notifications\Channels\LogSmsChannel;
 use Modules\Authentication\Models\PersonalAccessToken;
 use Modules\Authentication\Models\User;
+use Modules\Authentication\Notifications\Channels\LogSmsChannel;
 use Modules\Authentication\Policies\PersonalAccessTokenPolicy;
 use Modules\Authentication\Policies\UserPolicy;
 

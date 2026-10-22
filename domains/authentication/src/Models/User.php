@@ -11,6 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Modules\Authorization\Models\UserRole;
+use Modules\Authorization\Models\UserSystemAction;
 use Modules\BookReading\Models\ReadingHistory;
 use Yajra\Auditable\AuditableWithDeletesTrait;
 
@@ -80,7 +81,7 @@ class User extends Authenticatable
 
     public function userSystemActions(): HasMany
     {
-        return $this->hasMany(\Modules\Authorization\Models\UserSystemAction::class, 'user_id');
+        return $this->hasMany(UserSystemAction::class, 'user_id');
     }
 
     public function hasActiveRole(string ...$codes): bool

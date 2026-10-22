@@ -7,7 +7,6 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\Authorization\Exceptions\AuthorizationException;
 use Modules\Authorization\Models\UserRole;
 use Modules\Authorization\Repositories\AccessManagement\RoleAssignmentRepository;
-use Modules\Authorization\Services\AccessManagement\UserSystemActionService;
 
 class RoleAssignmentService
 {

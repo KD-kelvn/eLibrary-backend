@@ -3,6 +3,7 @@
 namespace Modules\BookBorrowing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Modules\BookBorrowing\Models\BorrowingRequest;
 use Modules\BookBorrowing\Services\LibrarianDashboardService;
@@ -23,7 +24,7 @@ class LibrarianDashboardController extends Controller
                 $this->service->summary(),
                 'Librarian dashboard summary retrieved.',
             );
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);

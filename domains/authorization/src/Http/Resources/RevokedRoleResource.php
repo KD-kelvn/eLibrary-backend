@@ -2,8 +2,8 @@
 
 namespace Modules\Authorization\Http\Resources;
 
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\Authorization\Models\RevokedRole;
 
 /**
@@ -21,7 +21,7 @@ class RevokedRoleResource extends JsonResource
             'userRoleId' => $this->user_role_id,
             'revokedBy' => [
                 'id' => $this->revoked_by,
-                'user' => UserSummaryResource::make($this->whenLoaded('revokedBy'))
+                'user' => UserSummaryResource::make($this->whenLoaded('revokedBy')),
             ],
             'revokedAt' => $this->revoked_at?->toIso8601String(),
             'reason' => $this->reason,

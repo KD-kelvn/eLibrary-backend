@@ -3,6 +3,7 @@
 namespace Modules\BookBorrowing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Modules\BookBorrowing\Exceptions\BookBorrowingException;
 use Modules\BookBorrowing\Http\Requests\IndexPenaltyBatchRequest;
@@ -33,7 +34,7 @@ class PenaltyBatchController extends Controller
             );
         } catch (BookBorrowingException $exception) {
             return $this->handleBookBorrowingException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -52,7 +53,7 @@ class PenaltyBatchController extends Controller
             );
         } catch (BookBorrowingException $exception) {
             return $this->handleBookBorrowingException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -73,7 +74,7 @@ class PenaltyBatchController extends Controller
             );
         } catch (BookBorrowingException $exception) {
             return $this->handleBookBorrowingException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -94,7 +95,7 @@ class PenaltyBatchController extends Controller
             );
         } catch (BookBorrowingException $exception) {
             return $this->handleBookBorrowingException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);

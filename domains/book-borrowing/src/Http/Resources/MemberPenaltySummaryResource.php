@@ -2,8 +2,8 @@
 
 namespace Modules\BookBorrowing\Http\Resources;
 
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\BookBorrowing\Models\PenaltyBatch;
 
 /**
