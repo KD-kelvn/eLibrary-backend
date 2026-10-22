@@ -40,6 +40,7 @@ class MenuWorkspaceSeeder extends Seeder
             'librarian-sub-categories' => 'manage-catalog',
             'librarian-shelves' => 'manage-catalog',
             'librarian-books' => 'manage-catalog',
+            'librarian-copies' => 'manage-catalog',
             'librarian-dashboard-home' => 'circulation',
             'librarian-borrowing-requests' => 'circulation',
             'librarian-borrowing-returns' => 'circulation',

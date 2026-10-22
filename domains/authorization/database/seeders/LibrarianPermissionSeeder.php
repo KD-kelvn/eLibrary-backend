@@ -38,6 +38,7 @@ class LibrarianPermissionSeeder extends Seeder
                     ['name' => 'Sub-categories', 'code' => 'librarian-sub-categories', 'route' => '/librarian/catalogue/sub-categories', 'sort_order' => 30],
                     ['name' => 'Shelves', 'code' => 'librarian-shelves', 'route' => '/librarian/catalogue/shelves', 'sort_order' => 40],
                     ['name' => 'Books', 'code' => 'librarian-books', 'route' => '/librarian/catalogue/books', 'sort_order' => 50],
+                    ['name' => 'Copies & inventory', 'code' => 'librarian-copies', 'route' => '/librarian/catalogue/copies', 'sort_order' => 60],
                 ],
             ],
             [
