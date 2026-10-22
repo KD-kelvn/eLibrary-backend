@@ -15,6 +15,19 @@ return [
 
     /*
      * |--------------------------------------------------------------------------
+     * | Application Version
+     * |--------------------------------------------------------------------------
+     * |
+     * | SemVer product version. Prefer APP_VERSION in the environment; otherwise
+     * | read the root VERSION file (kept in sync with git tags on main).
+     * |
+     */
+    'version' => env('APP_VERSION') ?: (is_readable(base_path('VERSION'))
+        ? trim((string) file_get_contents(base_path('VERSION')))
+        : '0.0.0'),
+
+    /*
+     * |--------------------------------------------------------------------------
      * | Application Environment
      * |--------------------------------------------------------------------------
      * |

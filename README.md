@@ -120,6 +120,12 @@ tests/                   PHPUnit
 
 Each layer has one job: Route → Controller → FormRequest → Service → Repository → Resource. See `.cursor/rules/backend-architecture.mdc` and `design/ENGINEERING-STANDARDS.md`.
 
+## Versioning
+
+- SemVer in root `VERSION`; exposed as `config('app.version')` (override with `APP_VERSION`).
+- Git tags on `main`: `vX.Y.Z` (see `design/BRANCHING.md` and `design/VERSIONING.md`).
+- Current baseline: **0.0.0**.
+
 ## Design docs
 
 In the `design` repo (sibling folder `../design/`):
