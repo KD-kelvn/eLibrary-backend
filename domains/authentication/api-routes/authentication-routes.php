@@ -7,12 +7,11 @@ use Modules\Authentication\Http\Controllers\UserManagementController;
 use Modules\Authentication\Http\Middleware\EnsureUserIsNotBlocked;
 
 Route::prefix('auth')->group(function () {
-    Route::post('register', [AuthController::class, 'register']);
-    Route::post('login', [AuthController::class, 'login']);
-    Route::post('otp/request', [AuthController::class, 'requestOtp']);
-    Route::post('otp/verify', [AuthController::class, 'verifyOtp']);
-
     Route::middleware('throttle:5,1')->group(function () {
+        Route::post('register', [AuthController::class, 'register']);
+        Route::post('login', [AuthController::class, 'login']);
+        Route::post('otp/request', [AuthController::class, 'requestOtp']);
+        Route::post('otp/verify', [AuthController::class, 'verifyOtp']);
         Route::post('password/forgot', [AuthController::class, 'forgotPassword']);
         Route::post('password/verify-otp', [AuthController::class, 'verifyPasswordResetOtp']);
         Route::post('password/reset', [AuthController::class, 'resetPassword']);

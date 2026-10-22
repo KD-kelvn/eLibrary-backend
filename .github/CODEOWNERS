@@ -1,0 +1,8 @@
+# Adjust GitHub handles as the team grows.
+* @KD-kelvn
+
+/domains/authentication/ @KD-kelvn
+/domains/authorization/ @KD-kelvn
+/domains/**/Policies/ @KD-kelvn
+/domains/**/database/migrations/ @KD-kelvn
+/.github/ @KD-kelvn

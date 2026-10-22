@@ -12,26 +12,26 @@ class SystemModulePolicy
 
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 
     public function view(User $user, SystemModule $module): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 
     public function update(User $user, SystemModule $module): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 
     public function delete(User $user, SystemModule $module): bool
     {
-        return true;
+        return $user->hasActiveRole('admin');
     }
 }
