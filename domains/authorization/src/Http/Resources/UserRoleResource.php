@@ -2,8 +2,8 @@
 
 namespace Modules\Authorization\Http\Resources;
 
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\Authorization\Models\UserRole;
 
 /**
@@ -20,7 +20,7 @@ class UserRoleResource extends JsonResource
             'id' => $this->id,
             'user' => [
                 'id' => $this->user_id,
-                'details' => UserSummaryResource::make($this->whenLoaded('user'))
+                'details' => UserSummaryResource::make($this->whenLoaded('user')),
             ],
             'role' => [
                 'id' => $this->role_id,
@@ -32,7 +32,7 @@ class UserRoleResource extends JsonResource
             ],
             'assignedBy' => [
                 'id' => $this->assigned_by,
-                'user' => UserSummaryResource::make($this->whenLoaded('assignedBy'))
+                'user' => UserSummaryResource::make($this->whenLoaded('assignedBy')),
             ],
             'expiresAt' => $this->expires_at?->toDateString(),
             'assignedAt' => $this->whenNotNull($this->assigned_at),

@@ -3,6 +3,7 @@
 namespace Modules\BookCatalogue\Http\Controllers\Reusables;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Modules\BookCatalogue\Exceptions\BookCatalogueException;
 use Modules\BookCatalogue\Http\Requests\Reusables\IndexSubCategoryRequest;
@@ -30,7 +31,7 @@ class SubCategoryController extends Controller
             return $this->paginatedResponse($paginator, SubCategoryResource::class, 'Sub categories retrieved.');
         } catch (BookCatalogueException $exception) {
             return $this->handleBookCatalogueException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -48,7 +49,7 @@ class SubCategoryController extends Controller
             );
         } catch (BookCatalogueException $exception) {
             return $this->handleBookCatalogueException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -67,7 +68,7 @@ class SubCategoryController extends Controller
             );
         } catch (BookCatalogueException $exception) {
             return $this->handleBookCatalogueException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -85,7 +86,7 @@ class SubCategoryController extends Controller
             );
         } catch (BookCatalogueException $exception) {
             return $this->handleBookCatalogueException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -103,7 +104,7 @@ class SubCategoryController extends Controller
             return $this->successResponse(null, 'Sub category deleted.');
         } catch (BookCatalogueException $exception) {
             return $this->handleBookCatalogueException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);

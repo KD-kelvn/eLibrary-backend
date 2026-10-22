@@ -1,5 +1,12 @@
 <?php
 
+use App\AuditResolvers\ClientOsResorver;
+use OwenIt\Auditing\Models\Audit;
+use OwenIt\Auditing\Resolvers\IpAddressResolver;
+use OwenIt\Auditing\Resolvers\UrlResolver;
+use OwenIt\Auditing\Resolvers\UserAgentResolver;
+use OwenIt\Auditing\Resolvers\UserResolver;
+
 return [
     'enabled' => env('AUDITING_ENABLED', true),
 
@@ -11,7 +18,7 @@ return [
      * | Define which Audit model implementation should be used.
      * |
      */
-    'implementation' => OwenIt\Auditing\Models\Audit::class,
+    'implementation' => Audit::class,
 
     /*
      * |--------------------------------------------------------------------------
@@ -27,7 +34,7 @@ return [
             'web',
             'api',
         ],
-        'resolver' => OwenIt\Auditing\Resolvers\UserResolver::class,
+        'resolver' => UserResolver::class,
     ],
 
     /*
@@ -39,10 +46,10 @@ return [
      * |
      */
     'resolvers' => [
-        'ip_address' => OwenIt\Auditing\Resolvers\IpAddressResolver::class,
-        'user_agent' => OwenIt\Auditing\Resolvers\UserAgentResolver::class,
-        'url' => OwenIt\Auditing\Resolvers\UrlResolver::class,
-        'client_os' => App\AuditResolvers\ClientOsResorver::class,
+        'ip_address' => IpAddressResolver::class,
+        'user_agent' => UserAgentResolver::class,
+        'url' => UrlResolver::class,
+        'client_os' => ClientOsResorver::class,
     ],
 
     /*

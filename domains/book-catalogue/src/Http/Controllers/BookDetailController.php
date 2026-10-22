@@ -3,6 +3,7 @@
 namespace Modules\BookCatalogue\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use Modules\BookCatalogue\Exceptions\BookCatalogueException;
@@ -34,7 +35,7 @@ class BookDetailController extends Controller
             return $this->paginatedResponse($paginator, BookDetailResource::class, 'Books retrieved.');
         } catch (BookCatalogueException $exception) {
             return $this->handleBookCatalogueException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -50,7 +51,7 @@ class BookDetailController extends Controller
                 $this->bookDetailService->summary(),
                 'Book summary retrieved.',
             );
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -71,7 +72,7 @@ class BookDetailController extends Controller
             );
         } catch (BookCatalogueException $exception) {
             return $this->handleBookCatalogueException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -93,7 +94,7 @@ class BookDetailController extends Controller
             );
         } catch (BookCatalogueException $exception) {
             return $this->handleBookCatalogueException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -111,7 +112,7 @@ class BookDetailController extends Controller
             );
         } catch (BookCatalogueException $exception) {
             return $this->handleBookCatalogueException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -134,7 +135,7 @@ class BookDetailController extends Controller
             );
         } catch (BookCatalogueException $exception) {
             return $this->handleBookCatalogueException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -157,7 +158,7 @@ class BookDetailController extends Controller
             );
         } catch (BookCatalogueException $exception) {
             return $this->handleBookCatalogueException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -175,7 +176,7 @@ class BookDetailController extends Controller
             return $this->successResponse(null, 'Book deleted.');
         } catch (BookCatalogueException $exception) {
             return $this->handleBookCatalogueException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);

@@ -3,6 +3,7 @@
 namespace Modules\BookCatalogue\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Modules\BookCatalogue\Exceptions\BookCatalogueException;
 use Modules\BookCatalogue\Http\Requests\StoreBookFavouriteRequest;
@@ -28,7 +29,7 @@ class BookFavouriteController extends Controller
                 MemberBookCardResource::collection($books),
                 'Favourites retrieved.',
             );
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -53,7 +54,7 @@ class BookFavouriteController extends Controller
             );
         } catch (BookCatalogueException $exception) {
             return $this->handleBookCatalogueException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);
@@ -73,7 +74,7 @@ class BookFavouriteController extends Controller
             return $this->successResponse(null, 'Removed from favourites.');
         } catch (BookCatalogueException $exception) {
             return $this->handleBookCatalogueException($exception);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $exception) {
+        } catch (AuthorizationException $exception) {
             return $this->failResponse(null, $exception->getMessage(), 403);
         } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), 500, $exception);

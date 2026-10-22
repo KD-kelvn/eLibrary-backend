@@ -5,16 +5,16 @@ use Modules\Authentication\Http\Middleware\EnsureUserIsNotBlocked;
 use Modules\Authorization\Http\Controllers\AccessManagement\RoleAssignmentController;
 use Modules\Authorization\Http\Controllers\AccessManagement\RoleRevokingController;
 use Modules\Authorization\Http\Controllers\AccessManagement\UserSystemActionController;
-use Modules\Authorization\Http\Controllers\RolesManagement\RolesController;
+use Modules\Authorization\Http\Controllers\AdminDashboardController;
 use Modules\Authorization\Http\Controllers\Permissions\MenuController;
 use Modules\Authorization\Http\Controllers\Permissions\MenuItemController;
 use Modules\Authorization\Http\Controllers\Permissions\PermissionRoleController;
 use Modules\Authorization\Http\Controllers\Permissions\SystemActionController;
+use Modules\Authorization\Http\Controllers\RolesManagement\RolesController;
 use Modules\Authorization\Http\Controllers\SystemModuleController;
 use Modules\Authorization\Http\Controllers\SystemModuleRoleController;
 use Modules\Authorization\Http\Controllers\SystemPageController;
 use Modules\Authorization\Http\Controllers\SystemPageRoleController;
-use Modules\Authorization\Http\Controllers\AdminDashboardController;
 
 Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class])->group(function () {
     Route::get('admin-dashboard', AdminDashboardController::class);

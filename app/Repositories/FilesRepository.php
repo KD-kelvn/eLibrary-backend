@@ -88,7 +88,7 @@ class FilesRepository
         string $directory,
         ?string $fileName = null,
         string $disk = 'public',
-    ): array|null {
+    ): ?array {
         if ($files === null) {
             return null;
         }

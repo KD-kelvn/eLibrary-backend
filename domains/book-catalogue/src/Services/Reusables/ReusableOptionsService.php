@@ -2,6 +2,7 @@
 
 namespace Modules\BookCatalogue\Services\Reusables;
 
+use Illuminate\Support\Collection;
 use Modules\BookCatalogue\Models\Category;
 use Modules\BookCatalogue\Models\Shelf;
 use Modules\BookCatalogue\Models\SubCategory;
@@ -13,7 +14,7 @@ class ReusableOptionsService
      * Fetch all reusable lookups grouped by type for use in
      * book create forms and catalogue filters.
      *
-     * @return array<string, \Illuminate\Support\Collection>
+     * @return array<string, Collection>
      */
     public function all(): array
     {
