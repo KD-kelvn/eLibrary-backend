@@ -14,6 +14,7 @@
             <directory>tests/Feature</directory>
             <directory>domains/settings/tests/Feature</directory>
             <directory>domains/authorization/tests/Feature</directory>
+            <directory>domains/academic/tests/Feature</directory>
         </testsuite>
     </testsuites>
     <source>

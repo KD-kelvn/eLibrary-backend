@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ffc6d13e4a8af8260ae13272a0c0ede2",
+    "content-hash": "3273001236826119a82184fc2f8cbd60",
     "packages": [
         {
             "name": "brick/math",
@@ -3383,6 +3383,38 @@
                 }
             ],
             "time": "2026-04-14T12:32:34+00:00"
+        },
+        {
+            "name": "modules/academic",
+            "version": "1.0",
+            "dist": {
+                "type": "path",
+                "url": "domains/academic",
+                "reference": "5c3b3bf46a2ef56d2e5dd522522c1ef35a533d53"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Modules\\Academic\\Providers\\AcademicServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Academic\\": "src/",
+                    "Modules\\Academic\\Tests\\": "tests/",
+                    "Modules\\Academic\\Database\\Factories\\": "database/factories/",
+                    "Modules\\Academic\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "modules/authentication",

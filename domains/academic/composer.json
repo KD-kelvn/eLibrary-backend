@@ -1,0 +1,24 @@
+{
+    "name": "modules/academic",
+    "description": "Academic master data (faculties, departments, programmes, courses)",
+    "type": "library",
+    "version": "1.0",
+    "license": "proprietary",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Modules\\Academic\\": "src/",
+            "Modules\\Academic\\Tests\\": "tests/",
+            "Modules\\Academic\\Database\\Factories\\": "database/factories/",
+            "Modules\\Academic\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "minimum-stability": "stable",
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Academic\\Providers\\AcademicServiceProvider"
+            ]
+        }
+    }
+}
