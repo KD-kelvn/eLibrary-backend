@@ -109,4 +109,39 @@ class SettingValueRepository
             ->where('effective_from', '<=', $moment)
             ->exists();
     }
+
+    /**
+     * Future non-cancelled rows for a key/scope.
+     *
+     * @return Collection<int, SettingValue>
+     */
+    public function pendingFor(string $key, string $scope, CarbonInterface|string|null $at = null): Collection
+    {
+        $moment = Carbon::parse($at ?? now());
+
+        return $this->model->newQuery()
+            ->where('key', $key)
+            ->where('scope', $scope)
+            ->whereNull('cancelled_at')
+            ->where('effective_from', '>', $moment)
+            ->orderBy('effective_from')
+            ->get();
+    }
+
+    /**
+     * Append-only history (including cancelled), newest first.
+     *
+     * @return Collection<int, SettingValue>
+     */
+    public function history(?string $key = null, ?string $scope = null, CarbonInterface|string|null $from = null, CarbonInterface|string|null $to = null, int $limit = 100): Collection
+    {
+        return $this->model->newQuery()
+            ->when($key, fn ($q) => $q->where('key', $key))
+            ->when($scope, fn ($q) => $q->where('scope', $scope))
+            ->when($from, fn ($q) => $q->where('created_at', '>=', Carbon::parse($from)))
+            ->when($to, fn ($q) => $q->where('created_at', '<=', Carbon::parse($to)))
+            ->orderByDesc('id')
+            ->limit(min($limit, 500))
+            ->get();
+    }
 }

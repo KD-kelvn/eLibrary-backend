@@ -11,6 +11,8 @@ use Modules\Settings\Models\LoginSlide;
 use Modules\Settings\Policies\BrandingPolicy;
 use Modules\Settings\Policies\LoginSlidePolicy;
 use Modules\Settings\Services\SettingsService;
+use Modules\Settings\Support\CrossFieldSettingsValidator;
+use Modules\Settings\Support\LibrarySettingsAuthorizer;
 use Modules\Settings\Support\SettingsCache;
 use Modules\Settings\Support\SettingsRegistry;
 
@@ -21,6 +23,8 @@ class SettingsServiceProvider extends ServiceProvider
         $this->app->singleton(SettingsRegistry::class);
         $this->app->singleton(SettingsCache::class);
         $this->app->singleton(SettingsService::class);
+        $this->app->singleton(LibrarySettingsAuthorizer::class);
+        $this->app->singleton(CrossFieldSettingsValidator::class);
     }
 
     public function boot(): void
