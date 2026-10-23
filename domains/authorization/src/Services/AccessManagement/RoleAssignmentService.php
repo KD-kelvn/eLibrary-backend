@@ -6,9 +6,7 @@ use App\Support\AdminActivity;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Modules\Authorization\Exceptions\AuthorizationException;
-use Modules\Authorization\Models\SystemAction;
 use Modules\Authorization\Models\UserRole;
-use Modules\Authorization\Models\UserSystemAction;
 use Modules\Authorization\Repositories\AccessManagement\RoleAssignmentRepository;
 use Modules\Authorization\Services\LastAdminGuard;
 
@@ -17,6 +15,7 @@ class RoleAssignmentService
     public function __construct(
         protected RoleAssignmentRepository $repository,
         protected UserSystemActionService $userActions,
+        protected RoleActionGrantService $grants,
         protected LastAdminGuard $lastAdmin,
     ) {}
 
@@ -53,7 +52,7 @@ class RoleAssignmentService
                 'assigned_at' => now(),
             ]);
 
-            $this->grantRoleDefaultActions($assignment);
+            $this->grants->grantDefaults($assignment);
 
             AdminActivity::log(
                 'Role assigned to user',
@@ -125,46 +124,6 @@ class RoleAssignmentService
 
         $this->userActions->revokeForUserRole($assignment);
         $this->repository->delete($assignment);
-    }
-
-    /**
-     * Grant every matrix/menu action linked to the role (owner or pivot).
-     */
-    protected function grantRoleDefaultActions(UserRole $assignment): void
-    {
-        $actionIds = SystemAction::query()
-            ->where('is_active', true)
-            ->where(function ($query) use ($assignment) {
-                $query
-                    ->where('role_id', $assignment->role_id)
-                    ->orWhereHas(
-                        'roles',
-                        fn ($roles) => $roles->whereKey($assignment->role_id),
-                    );
-            })
-            ->pluck('id');
-
-        foreach ($actionIds as $actionId) {
-            $grant = UserSystemAction::withTrashed()->where([
-                'user_id' => $assignment->user_id,
-                'system_action_id' => $actionId,
-            ])->first();
-
-            if ($grant) {
-                if ($grant->trashed()) {
-                    $grant->restore();
-                }
-                $grant->update(['user_role_id' => $assignment->id]);
-
-                continue;
-            }
-
-            UserSystemAction::query()->create([
-                'user_id' => $assignment->user_id,
-                'system_action_id' => $actionId,
-                'user_role_id' => $assignment->id,
-            ]);
-        }
     }
 
     protected function findOrFail(int $id): UserRole

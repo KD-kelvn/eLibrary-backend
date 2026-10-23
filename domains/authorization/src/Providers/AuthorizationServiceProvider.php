@@ -5,6 +5,7 @@ namespace Modules\Authorization\Providers;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Modules\Authorization\Console\Commands\SyncUserActionGrantsCommand;
 use Modules\Authorization\Models\Menu;
 use Modules\Authorization\Models\MenuItem;
 use Modules\Authorization\Models\RevokedRole;
@@ -33,6 +34,10 @@ class AuthorizationServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([SyncUserActionGrantsCommand::class]);
+        }
 
         $this->registerPolicies();
 

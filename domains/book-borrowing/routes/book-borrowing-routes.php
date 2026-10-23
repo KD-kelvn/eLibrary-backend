@@ -8,7 +8,7 @@ use Modules\BookBorrowing\Http\Controllers\LibrarianDashboardController;
 use Modules\BookBorrowing\Http\Controllers\PenaltyBatchController;
 use Modules\BookBorrowing\Http\Controllers\PenaltyPolicyController;
 
-Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class])->group(function () {
+Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class, 'permission'])->group(function () {
     Route::get('librarian/dashboard', LibrarianDashboardController::class);
 
     Route::get('processes/options', [BorrowingProcessController::class, 'options']);

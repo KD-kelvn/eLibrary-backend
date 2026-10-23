@@ -16,7 +16,7 @@ use Modules\Authorization\Http\Controllers\SystemModuleRoleController;
 use Modules\Authorization\Http\Controllers\SystemPageController;
 use Modules\Authorization\Http\Controllers\SystemPageRoleController;
 
-Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class])->group(function () {
+Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class, 'permission'])->group(function () {
     Route::get('admin-dashboard', AdminDashboardController::class);
 
     Route::apiResource('roles', RolesController::class);
