@@ -6,6 +6,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Modules\Authentication\Models\User;
 use Modules\BookBorrowing\Enums\PenaltyBatchStatusEnum;
 use Modules\BookBorrowing\Exceptions\BookBorrowingException;
 use Modules\BookBorrowing\Models\BorrowingPenalty;
@@ -14,13 +15,14 @@ use Modules\BookBorrowing\Models\PenaltyPayment;
 use Modules\BookBorrowing\Models\StoppedPenalty;
 use Modules\BookBorrowing\Repositories\BorrowingRequestRepository;
 use Modules\BookBorrowing\Repositories\PenaltyBatchRepository;
+use Modules\Settings\Services\SettingsService;
 
 class PenaltyBatchService
 {
     public function __construct(
         protected PenaltyBatchRepository $repository,
         protected BorrowingRequestRepository $requestRepository,
-        protected PenaltyPolicyService $policyService,
+        protected SettingsService $settings,
     ) {}
 
     public function list(array $filters = [], int $perPage = 15): LengthAwarePaginator
@@ -35,31 +37,60 @@ class PenaltyBatchService
 
     /**
      * 00:00 job — create PENDING batches for overdue issued borrows.
+     *
+     * Grace / rate come from SettingsService (V1-001), not penalty_policies.
      */
     public function createBatchesForOverdue(): int
     {
-        $policy = $this->policyService->active();
-
-        if (! $policy) {
-            return 0;
-        }
-
-        $overdueBefore = now()->subDays($policy->grace_days)->startOfDay();
+        // Widen the SQL window using the smallest grace so role-specific checks still apply.
+        $minGrace = min(
+            (int) $this->settings->get('fines.grace_days', 'student'),
+            (int) $this->settings->get('fines.grace_days', 'faculty'),
+            (int) $this->settings->get('fines.grace_days', 'librarian'),
+            (int) $this->settings->get('fines.grace_days', 'admin'),
+        );
+        $overdueBefore = now()->subDays($minGrace)->startOfDay();
         $created = 0;
 
         foreach ($this->requestRepository->overdueIssuedWithoutPendingBatch($overdueBefore) as $request) {
+            $roleCode = $this->borrowingRoleCode($request->user);
+            $policy = $this->settings->forRole($roleCode);
+            $roleOverdueBefore = now()->subDays($policy->graceDays)->startOfDay();
+
+            if (Carbon::parse($request->end_date)->greaterThanOrEqualTo($roleOverdueBefore)) {
+                continue;
+            }
+
             $this->repository->create([
                 'borrowing_request_id' => $request->id,
                 'book_type' => $request->book_type,
                 'book_type_id' => $request->book_type_id,
                 'batch_no' => $this->generateBatchNo(),
-                'cost_per_day' => $policy->cost_per_day,
+                'cost_per_day' => $policy->fineRatePerDay,
                 'status' => PenaltyBatchStatusEnum::Pending,
             ]);
             $created++;
         }
 
         return $created;
+    }
+
+    /**
+     * Prefer member/faculty role codes for fine policy resolution.
+     */
+    protected function borrowingRoleCode(?User $user): string
+    {
+        if (! $user) {
+            return 'student';
+        }
+
+        foreach (['student', 'faculty', 'librarian', 'admin'] as $code) {
+            if ($user->hasActiveRole($code)) {
+                return $code;
+            }
+        }
+
+        return 'student';
     }
 
     /**

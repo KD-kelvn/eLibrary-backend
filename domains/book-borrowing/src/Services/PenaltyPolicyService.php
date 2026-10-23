@@ -8,6 +8,10 @@ use Modules\BookBorrowing\Exceptions\BookBorrowingException;
 use Modules\BookBorrowing\Models\PenaltyPolicy;
 use Modules\BookBorrowing\Repositories\PenaltyPolicyRepository;
 
+/**
+ * @deprecated Accrual reads fines.* via SettingsService (V1-001). This CRUD
+ *             remains for admin UI until library settings HTTP (V1-001a) lands.
+ */
 class PenaltyPolicyService
 {
     public function __construct(protected PenaltyPolicyRepository $repository) {}

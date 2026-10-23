@@ -50,3 +50,10 @@ Schedule::command('borrowing:generate-daily-penalties')
     ->withoutOverlapping()
     ->appendOutputTo($schedulerConsoleLog)
     ->storeOutputInDb();
+
+// FR-SET-09 — propagate future-dated library settings within ~60s.
+Schedule::command('settings:activate-pending')
+    ->everyMinute()
+    ->name('settings-activate-pending')
+    ->monitorName('settings-activate-pending')
+    ->withoutOverlapping();

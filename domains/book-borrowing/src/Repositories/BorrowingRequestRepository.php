@@ -58,7 +58,7 @@ class BorrowingRequestRepository
         return $this
             ->model
             ->newQuery()
-            ->with(['latestProgress', 'penaltyBatches'])
+            ->with(['latestProgress', 'penaltyBatches', 'user'])
             ->whereNotNull('end_date')
             ->where('end_date', '<', $overdueBefore)
             ->whereHas('latestProgress', function (Builder $query) {
