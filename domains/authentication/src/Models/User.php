@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\HasApiTokens;
 use Modules\Authorization\Models\UserRole;
 use Modules\Authorization\Models\UserSystemAction;
@@ -18,8 +19,6 @@ use Yajra\Auditable\AuditableWithDeletesTrait;
 class User extends Authenticatable
 {
     use AuditableWithDeletesTrait, HasApiTokens, Notifiable, SoftDeletes;
-
-    protected $table = 'auth.users';
 
     /**
      * The attributes that are mass assignable.
@@ -57,6 +56,13 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_blocked' => 'boolean',
         ];
+    }
+
+    public function getTable(): string
+    {
+        return Schema::getConnection()->getDriverName() === 'pgsql'
+            ? 'auth.users'
+            : 'users';
     }
 
     public function profile(): HasOne

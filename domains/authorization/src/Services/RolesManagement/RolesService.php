@@ -39,9 +39,16 @@ class RolesService
             'description' => $data['description'] ?? null,
             'status' => $data['status'] ?? RoleStatusEnum::Inactive->value,
             'code' => $data['code'],
+            'is_system' => false,
         ]);
 
-        AdminActivity::log('Role created', $role, ['code' => $role->code], event: 'created');
+        AdminActivity::log(
+            'Role created',
+            $role,
+            ['code' => $role->code, 'before' => null, 'after' => $role->only(['name', 'code', 'status', 'is_system'])],
+            logName: 'authorization',
+            event: 'role.created',
+        );
 
         return $role;
     }
@@ -49,6 +56,23 @@ class RolesService
     public function update(int $id, array $data): Role
     {
         $role = $this->findOrFail($id);
+        $before = $role->only(['name', 'description', 'status', 'code', 'is_system']);
+
+        if ($role->is_system) {
+            if (array_key_exists('name', $data) && $data['name'] !== $role->name) {
+                throw AuthorizationException::unprocessable(
+                    'System roles cannot be renamed.',
+                    'SYSTEM_ROLE',
+                );
+            }
+
+            if (array_key_exists('code', $data) && $data['code'] !== $role->code) {
+                throw AuthorizationException::unprocessable(
+                    'System role codes cannot be changed.',
+                    'SYSTEM_ROLE',
+                );
+            }
+        }
 
         $role = $this->repository->update($role, collect($data)->only([
             'name',
@@ -60,8 +84,12 @@ class RolesService
         AdminActivity::log(
             'Role updated',
             $role,
-            ['changed' => array_keys($data), 'status' => $role->status?->value],
-            event: 'updated',
+            [
+                'before' => $before,
+                'after' => $role->only(['name', 'description', 'status', 'code', 'is_system']),
+            ],
+            logName: 'authorization',
+            event: 'role.updated',
         );
 
         return $role;
@@ -70,6 +98,13 @@ class RolesService
     public function destroy(int $id): void
     {
         $role = $this->findOrFail($id);
+
+        if ($role->is_system) {
+            throw AuthorizationException::unprocessable(
+                'System roles cannot be deleted.',
+                'SYSTEM_ROLE',
+            );
+        }
 
         $assignmentCount = $role->userRoles()->count();
         if ($assignmentCount > 0) {
@@ -93,10 +128,17 @@ class RolesService
                 $action->delete();
             }
 
-            AdminActivity::log('Role deleted', $role, [
-                'code' => $role->code,
-                'deleted_actions' => $actions->pluck('code')->all(),
-            ], event: 'deleted');
+            AdminActivity::log(
+                'Role deleted',
+                $role,
+                [
+                    'before' => $role->only(['name', 'code', 'status']),
+                    'after' => null,
+                    'deleted_actions' => $actions->pluck('code')->all(),
+                ],
+                logName: 'authorization',
+                event: 'role.deleted',
+            );
 
             $this->repository->delete($role);
         });

@@ -62,10 +62,20 @@ class SystemActionService
                 $this->syncOwningRolePivot($action, $nextRoleId);
             }
 
-            AdminActivity::log('System action updated', $action, [
-                'changed' => array_keys($data),
-                'role_id' => $action->role_id,
-            ], event: 'updated');
+            AdminActivity::log(
+                'System action updated',
+                $action,
+                [
+                    'before' => ['role_id' => $previousRoleId, 'keys' => array_keys($data)],
+                    'after' => [
+                        'role_id' => $action->role_id,
+                        'code' => $action->code,
+                        'is_active' => $action->is_active,
+                    ],
+                ],
+                logName: 'authorization',
+                event: 'permission.changed',
+            );
 
             return $this->show($action->id);
         });

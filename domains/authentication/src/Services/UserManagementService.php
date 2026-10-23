@@ -12,6 +12,7 @@ use Modules\Authentication\Repositories\UserRepository;
 use Modules\Authorization\Enums\RoleStatusEnum;
 use Modules\Authorization\Models\Role;
 use Modules\Authorization\Models\UserRole;
+use Modules\Authorization\Services\LastAdminGuard;
 
 class UserManagementService
 {
@@ -20,6 +21,7 @@ class UserManagementService
     public function __construct(
         private readonly UserRepository $users,
         private readonly UserProfileRepository $profiles,
+        private readonly LastAdminGuard $lastAdmin,
     ) {}
 
     public function list(array $filters, int $perPage): LengthAwarePaginator
@@ -117,6 +119,7 @@ class UserManagementService
             }
 
             if (($data['is_blocked'] ?? false) === true) {
+                $this->lastAdmin->assertCanBlockOrDeactivate($user);
                 $user->tokens()->delete();
             }
 
@@ -136,6 +139,11 @@ class UserManagementService
     public function setBlocked(int $id, bool $isBlocked): User
     {
         $user = $this->show($id);
+
+        if ($isBlocked) {
+            $this->lastAdmin->assertCanBlockOrDeactivate($user);
+        }
+
         $this->users->update($user, ['is_blocked' => $isBlocked]);
 
         if ($isBlocked) {
@@ -157,6 +165,7 @@ class UserManagementService
     public function destroy(int $id): void
     {
         $user = $this->show($id);
+        $this->lastAdmin->assertCanDeleteUser($user);
         $user->tokens()->delete();
 
         AdminActivity::log(

@@ -8,12 +8,14 @@ use Illuminate\Support\Facades\DB;
 use Modules\Authorization\Exceptions\AuthorizationException;
 use Modules\Authorization\Models\RevokedRole;
 use Modules\Authorization\Repositories\AccessManagement\RoleRevokingRepository;
+use Modules\Authorization\Services\LastAdminGuard;
 
 class RoleRevokingService
 {
     public function __construct(
         protected RoleRevokingRepository $repository,
         protected UserSystemActionService $userActions,
+        protected LastAdminGuard $lastAdmin,
     ) {}
 
     public function list(array $filters = [], int $perPage = 15): LengthAwarePaginator
@@ -52,6 +54,8 @@ class RoleRevokingService
             );
         }
 
+        $this->lastAdmin->assertCanRevokeAdminAssignment($assignment);
+
         return DB::transaction(function () use ($data, $revokedBy, $assignment) {
             $revocation = $this->repository->create([
                 'user_role_id' => $assignment->id,
@@ -71,10 +75,16 @@ class RoleRevokingService
                 'Role assignment revoked',
                 $revocation,
                 [
+                    'user_id' => $assignment->user_id,
+                    'role_id' => $assignment->role_id,
+                    'role_code' => $assignment->role?->code,
                     'user_role_id' => $assignment->id,
                     'reason' => $data['reason'] ?? null,
+                    'before' => ['active' => true],
+                    'after' => ['active' => false],
                 ],
-                event: 'revoked',
+                logName: 'authorization',
+                event: 'role.revoked',
             );
 
             return $revocation;

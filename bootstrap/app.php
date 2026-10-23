@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Modules\Authentication\Exceptions\AuthenticationException;
+use Modules\Authorization\Exceptions\AuthorizationException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -25,6 +26,25 @@ return Application::configure(basePath: dirname(__DIR__))
                     'message' => $e->getMessage(),
                     'data' => null,
                 ], $e->getCode() >= 400 ? $e->getCode() : 400);
+            }
+        });
+
+        $exceptions->render(function (AuthorizationException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                $payload = [
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                    'data' => null,
+                ];
+
+                if ($e->errorCode()) {
+                    $payload['code'] = $e->errorCode();
+                }
+
+                return response()->json(
+                    $payload,
+                    $e->getCode() >= 400 ? $e->getCode() : 400,
+                );
             }
         });
 
