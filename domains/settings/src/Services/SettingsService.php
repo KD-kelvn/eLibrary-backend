@@ -209,6 +209,215 @@ class SettingsService
     }
 
     /**
+     * Full admin catalog: current value, default, rules, pending per key/scope.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function catalog(?string $group = null): array
+    {
+        $entries = [];
+
+        foreach ($this->registry->all() as $key => $definition) {
+            if ($group !== null && ($definition['group'] ?? null) !== $group) {
+                continue;
+            }
+
+            if (($definition['scope'] ?? 'global') === 'role') {
+                foreach (array_keys($definition['default'] ?? []) as $role) {
+                    $entries[] = $this->catalogEntry($key, $definition, 'role:'.$role, $role);
+                }
+            } else {
+                $entries[] = $this->catalogEntry($key, $definition, 'global', null);
+            }
+        }
+
+        return $entries;
+    }
+
+    /**
+     * Non-sensitive public subset for SPA (SDD §12.4).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function publicCatalog(): array
+    {
+        $publicKeys = config('library-settings.public_keys', [
+            'files.book_types',
+            'files.book_max_mb',
+            'files.image_types',
+            'files.image_max_mb',
+            'otp.length',
+            'loans.period_days',
+            'fines.grace_days',
+            'fines.rate_per_day',
+        ]);
+
+        return collect($this->catalog())
+            ->filter(fn (array $row) => in_array($row['key'], $publicKeys, true))
+            ->values()
+            ->map(fn (array $row) => [
+                'key' => $row['key'],
+                'scope' => $row['scope'],
+                'value' => $row['value'],
+                'default' => $row['default'],
+                'label' => $row['label'] ?? null,
+            ])
+            ->all();
+    }
+
+    /**
+     * Atomic batch change (FR-SET-02).
+     *
+     * @param  list<array{key: string, scope: string, value: mixed}>  $changes
+     * @return list<SettingValue>
+     */
+    public function changeBatch(
+        array $changes,
+        string $reason,
+        CarbonInterface|string|null $effectiveFrom = null,
+        ?int $createdBy = null,
+    ): array {
+        return DB::transaction(function () use ($changes, $reason, $effectiveFrom, $createdBy) {
+            $rows = [];
+
+            foreach ($changes as $change) {
+                $role = $this->registry->roleFromScope($change['scope']);
+                $rows[] = $this->change(
+                    $change['key'],
+                    $change['value'],
+                    $reason,
+                    $role,
+                    $effectiveFrom,
+                    $createdBy,
+                );
+            }
+
+            return $rows;
+        });
+    }
+
+    /**
+     * Reset keys, a group, or all registry keys (FR-SET-06).
+     *
+     * @param  list<string>|null  $keys
+     * @return list<SettingValue>
+     */
+    public function resetRequest(
+        string $reason,
+        ?array $keys = null,
+        ?string $group = null,
+        bool $all = false,
+        ?string $roleCode = null,
+        CarbonInterface|string|null $effectiveFrom = null,
+        ?int $createdBy = null,
+    ): array {
+        $targetKeys = match (true) {
+            $all => array_keys($this->registry->all()),
+            filled($group) => collect($this->registry->all())
+                ->filter(fn (array $def) => ($def['group'] ?? null) === $group)
+                ->keys()
+                ->all(),
+            default => $keys ?? [],
+        };
+
+        if ($targetKeys === []) {
+            throw new InvalidArgumentException('No settings selected for reset.');
+        }
+
+        $rows = [];
+
+        foreach ($targetKeys as $key) {
+            if ($this->registry->isRoleScoped($key)) {
+                $roles = $roleCode
+                    ? [$roleCode]
+                    : array_keys($this->registry->definition($key)['default'] ?? []);
+
+                foreach ($roles as $role) {
+                    $rows = array_merge($rows, $this->reset(
+                        [$key],
+                        $reason,
+                        $role,
+                        $effectiveFrom,
+                        $createdBy,
+                    ));
+                }
+            } else {
+                $rows = array_merge($rows, $this->reset(
+                    [$key],
+                    $reason,
+                    null,
+                    $effectiveFrom,
+                    $createdBy,
+                ));
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function history(?string $key = null, ?string $scope = null, CarbonInterface|string|null $from = null, CarbonInterface|string|null $to = null): array
+    {
+        return $this->repository->history($key, $scope, $from, $to)
+            ->map(function (SettingValue $row) {
+                return [
+                    'id' => $row->id,
+                    'key' => $row->key,
+                    'scope' => $row->scope,
+                    'value' => $row->decodedValue(),
+                    'reason' => $row->reason,
+                    'effectiveFrom' => optional($row->effective_from)?->toIso8601String(),
+                    'cancelledAt' => optional($row->cancelled_at)?->toIso8601String(),
+                    'createdBy' => $row->created_by,
+                    'createdAt' => optional($row->created_at)?->toIso8601String(),
+                ];
+            })
+            ->all();
+    }
+
+    /**
+     * Current effective map for cross-field validation (key|scope => value).
+     *
+     * @return array<string, mixed>
+     */
+    public function effectiveMap(): array
+    {
+        return $this->cachedMap()['values'];
+    }
+
+    /**
+     * @param  array<string, mixed>  $definition
+     * @return array<string, mixed>
+     */
+    protected function catalogEntry(string $key, array $definition, string $scope, ?string $role): array
+    {
+        $pending = $this->repository->pendingFor($key, $scope)->map(fn (SettingValue $row) => [
+            'id' => $row->id,
+            'value' => $row->decodedValue(),
+            'effectiveFrom' => optional($row->effective_from)?->toIso8601String(),
+            'reason' => $row->reason,
+        ])->values()->all();
+
+        return [
+            'key' => $key,
+            'scope' => $scope,
+            'group' => $definition['group'] ?? null,
+            'type' => $definition['type'] ?? null,
+            'value' => $this->get($key, $role),
+            'default' => $this->registry->default($key, $role),
+            'rules' => $this->registry->rules($key),
+            'min' => $definition['min'] ?? null,
+            'max' => $definition['max'] ?? null,
+            'allowed' => $definition['allowed'] ?? null,
+            'snapshot' => (bool) ($definition['snapshot'] ?? false),
+            'label' => $definition['label'] ?? null,
+            'pending' => $pending,
+        ];
+    }
+
+    /**
      * @return array{values: array<string, mixed>, valid_until: string|null}
      */
     protected function cachedMap(): array

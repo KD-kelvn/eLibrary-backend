@@ -13,6 +13,18 @@
  * }
  */
 return [
+    /** Keys exposed on GET /settings/library/public (non-sensitive). */
+    'public_keys' => [
+        'files.book_types',
+        'files.book_max_mb',
+        'files.image_types',
+        'files.image_max_mb',
+        'otp.length',
+        'loans.period_days',
+        'fines.grace_days',
+        'fines.rate_per_day',
+    ],
+
     'groups' => [
         'loans',
         'fines',
