@@ -43,8 +43,9 @@ class MemberDashboardService
             'lastRead' => $lastRead,
             'favourites' => MemberBookCardResource::collection($favouriteBooks)->resolve(),
             'favouriteIds' => $favouriteIds,
-            'activeBorrowings' => $this->borrowings->activeBorrowings($userId),
-            'activePenalties' => $this->borrowings->activePenalties($userId),
+            // Full “View all” lists for member activity pages (home rails still render a short slice).
+            'activeBorrowings' => $this->borrowings->activeBorrowings($userId, 50),
+            'activePenalties' => $this->borrowings->activePenalties($userId, 50),
         ];
     }
 
