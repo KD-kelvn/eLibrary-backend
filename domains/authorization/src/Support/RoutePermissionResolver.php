@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 /**
  * Resolves permission codes for the current request from config/authorization.php.
  *
- * @return list<string>|null  null = unmapped (coverage test fails); [] = auth-only OK
+ * @return list<string>|null null = unmapped (coverage test fails); [] = auth-only OK
  */
 class RoutePermissionResolver
 {
