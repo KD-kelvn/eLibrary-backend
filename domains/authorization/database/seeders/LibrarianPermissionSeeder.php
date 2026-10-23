@@ -38,6 +38,7 @@ class LibrarianPermissionSeeder extends Seeder
                     ['name' => 'Sub-categories', 'code' => 'librarian-sub-categories', 'route' => '/librarian/catalogue/sub-categories', 'sort_order' => 30],
                     ['name' => 'Shelves', 'code' => 'librarian-shelves', 'route' => '/librarian/catalogue/shelves', 'sort_order' => 40],
                     ['name' => 'Books', 'code' => 'librarian-books', 'route' => '/librarian/catalogue/books', 'sort_order' => 50],
+                    ['name' => 'Copies & inventory', 'code' => 'librarian-copies', 'route' => '/librarian/catalogue/copies', 'sort_order' => 60],
                 ],
             ],
             [
@@ -47,6 +48,7 @@ class LibrarianPermissionSeeder extends Seeder
                 'sort_order' => 30,
                 'items' => [
                     ['name' => 'Requests', 'code' => 'librarian-borrowing-requests', 'route' => '/librarian/borrowing/requests', 'sort_order' => 10],
+                    ['name' => 'Returns & overdue', 'code' => 'librarian-borrowing-returns', 'route' => '/librarian/borrowing/returns', 'sort_order' => 15],
                     ['name' => 'Penalties', 'code' => 'librarian-penalties', 'route' => '/librarian/borrowing/penalties', 'sort_order' => 20],
                 ],
             ],
