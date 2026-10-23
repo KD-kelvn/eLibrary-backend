@@ -10,7 +10,7 @@ Route::get('branding', [BrandingController::class, 'show']);
 Route::get('login-slides', [LoginSlideController::class, 'index']);
 Route::get('library/public', [LibrarySettingsController::class, 'publicIndex']);
 
-Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class])->group(function () {
+Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class, 'permission'])->group(function () {
     Route::post('branding', [BrandingController::class, 'update']);
 
     Route::get('login-slides/manage', [LoginSlideController::class, 'manage']);

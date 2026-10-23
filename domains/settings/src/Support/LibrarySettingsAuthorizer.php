@@ -3,52 +3,30 @@
 namespace Modules\Settings\Support;
 
 use Modules\Authentication\Models\User;
-use Modules\Authorization\Models\SystemAction;
-use Modules\Authorization\Models\UserSystemAction;
+use Modules\Authorization\Services\PermissionChecker;
 
 /**
  * FR-SET-08: view for librarian+admin; update/reset for admin.
- * Prefers matrix action grants; falls back to role codes until V1-004 middleware.
+ * Authoritative check is permission middleware (V1-004); this mirrors matrix codes.
  */
 class LibrarySettingsAuthorizer
 {
+    public function __construct(
+        protected PermissionChecker $permissions,
+    ) {}
+
     public function canView(User $user): bool
     {
-        return $this->hasAction($user, 'settings.library.view')
-            || $user->hasActiveRole('admin', 'librarian');
+        return $this->permissions->allowsOne($user, 'settings.library.view');
     }
 
     public function canUpdate(User $user): bool
     {
-        return $this->hasAction($user, 'settings.library.update')
-            || $user->hasActiveRole('admin');
+        return $this->permissions->allowsOne($user, 'settings.library.update');
     }
 
     public function canReset(User $user): bool
     {
-        return $this->hasAction($user, 'settings.library.reset')
-            || $user->hasActiveRole('admin');
-    }
-
-    protected function hasAction(User $user, string $code): bool
-    {
-        try {
-            $actionId = SystemAction::query()
-                ->where('code', $code)
-                ->where('is_active', true)
-                ->value('id');
-
-            if (! $actionId) {
-                return false;
-            }
-
-            return UserSystemAction::query()
-                ->where('user_id', $user->id)
-                ->where('system_action_id', $actionId)
-                ->exists();
-        } catch (\Throwable) {
-            // Table/schema unavailable (e.g. sqlite unit tests) — use role fallback.
-            return false;
-        }
+        return $this->permissions->allowsOne($user, 'settings.library.reset');
     }
 }

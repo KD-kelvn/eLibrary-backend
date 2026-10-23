@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Modules\Authentication\Exceptions\AuthenticationException;
 use Modules\Authorization\Exceptions\AuthorizationException;
+use Modules\Authorization\Http\Middleware\EnsurePermission;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,7 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'permission' => EnsurePermission::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (AuthenticationException $e, Request $request) {

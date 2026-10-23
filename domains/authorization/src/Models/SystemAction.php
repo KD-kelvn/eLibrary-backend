@@ -6,11 +6,10 @@ use App\Models\BaseModelWithAudits;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Schema;
 
 class SystemAction extends BaseModelWithAudits
 {
-    protected $table = 'auth.system_actions';
-
     protected $fillable = [
         'menu_item_id',
         'role_id',
@@ -24,6 +23,13 @@ class SystemAction extends BaseModelWithAudits
     protected function casts(): array
     {
         return ['is_active' => 'boolean'];
+    }
+
+    public function getTable(): string
+    {
+        return Schema::getConnection()->getDriverName() === 'pgsql'
+            ? 'auth.system_actions'
+            : 'system_actions';
     }
 
     public function menuItem(): BelongsTo
@@ -48,9 +54,13 @@ class SystemAction extends BaseModelWithAudits
 
     public function roles(): BelongsToMany
     {
+        $pivot = Schema::getConnection()->getDriverName() === 'pgsql'
+            ? 'auth.system_action_roles'
+            : 'system_action_roles';
+
         return $this->belongsToMany(
             Role::class,
-            'auth.system_action_roles',
+            $pivot,
             'system_action_id',
             'role_id',
         );

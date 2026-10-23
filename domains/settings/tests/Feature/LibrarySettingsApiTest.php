@@ -8,7 +8,10 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Modules\Authentication\Models\User;
 use Modules\Authorization\Models\Role;
+use Modules\Authorization\Models\SystemAction;
+use Modules\Authorization\Models\SystemActionRole;
 use Modules\Authorization\Models\UserRole;
+use Modules\Authorization\Models\UserSystemAction;
 use Modules\Settings\Http\Requests\UpdateLibrarySettingsRequest;
 use Modules\Settings\Services\SettingsService;
 use Modules\Settings\Support\CrossFieldSettingsValidator;
@@ -30,7 +33,17 @@ class LibrarySettingsApiTest extends TestCase
 
     protected function tearDown(): void
     {
-        foreach (['user_system_actions', 'revoked_roles', 'user_roles', 'roles', 'users', 'setting_values', 'activity_log'] as $table) {
+        foreach ([
+            'user_system_actions',
+            'system_action_roles',
+            'system_actions',
+            'revoked_roles',
+            'user_roles',
+            'roles',
+            'users',
+            'setting_values',
+            'activity_log',
+        ] as $table) {
             Schema::dropIfExists($table);
         }
         parent::tearDown();
@@ -143,18 +156,68 @@ class LibrarySettingsApiTest extends TestCase
             'is_blocked' => false,
         ]);
 
-        UserRole::query()->create([
+        $adminAssignment = UserRole::query()->create([
             'user_id' => $admin->id,
             'role_id' => $adminRole->id,
             'assigned_by' => $admin->id,
             'assigned_at' => now(),
         ]);
-        UserRole::query()->create([
+        $libAssignment = UserRole::query()->create([
             'user_id' => $librarian->id,
             'role_id' => $libRole->id,
             'assigned_by' => $admin->id,
             'assigned_at' => now(),
         ]);
+
+        $view = SystemAction::query()->create([
+            'name' => 'View library settings',
+            'code' => 'settings.library.view',
+            'role_id' => $libRole->id,
+            'action_type' => 'permission',
+            'is_active' => true,
+        ]);
+        $update = SystemAction::query()->create([
+            'name' => 'Update library settings',
+            'code' => 'settings.library.update',
+            'role_id' => $adminRole->id,
+            'action_type' => 'permission',
+            'is_active' => true,
+        ]);
+        $reset = SystemAction::query()->create([
+            'name' => 'Reset library settings',
+            'code' => 'settings.library.reset',
+            'role_id' => $adminRole->id,
+            'action_type' => 'permission',
+            'is_active' => true,
+        ]);
+
+        foreach ([$libRole->id, $adminRole->id] as $roleId) {
+            SystemActionRole::query()->create([
+                'system_action_id' => $view->id,
+                'role_id' => $roleId,
+            ]);
+        }
+        SystemActionRole::query()->create([
+            'system_action_id' => $update->id,
+            'role_id' => $adminRole->id,
+        ]);
+        SystemActionRole::query()->create([
+            'system_action_id' => $reset->id,
+            'role_id' => $adminRole->id,
+        ]);
+
+        UserSystemAction::query()->create([
+            'user_id' => $librarian->id,
+            'system_action_id' => $view->id,
+            'user_role_id' => $libAssignment->id,
+        ]);
+        foreach ([$view, $update, $reset] as $action) {
+            UserSystemAction::query()->create([
+                'user_id' => $admin->id,
+                'system_action_id' => $action->id,
+                'user_role_id' => $adminAssignment->id,
+            ]);
+        }
 
         $auth = app(LibrarySettingsAuthorizer::class);
 
@@ -195,7 +258,17 @@ class LibrarySettingsApiTest extends TestCase
 
     protected function createSchema(): void
     {
-        foreach (['user_system_actions', 'revoked_roles', 'user_roles', 'roles', 'users', 'setting_values', 'activity_log'] as $table) {
+        foreach ([
+            'user_system_actions',
+            'system_action_roles',
+            'system_actions',
+            'revoked_roles',
+            'user_roles',
+            'roles',
+            'users',
+            'setting_values',
+            'activity_log',
+        ] as $table) {
             Schema::dropIfExists($table);
         }
 
@@ -278,6 +351,31 @@ class LibrarySettingsApiTest extends TestCase
             $table->unsignedBigInteger('deleted_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
+        });
+
+        Schema::create('system_actions', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('code')->unique();
+            $table->unsignedBigInteger('role_id')->nullable();
+            $table->string('action_type')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->unsignedBigInteger('menu_item_id')->nullable();
+            $table->text('description')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->unsignedBigInteger('deleted_by')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('system_action_roles', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('system_action_id');
+            $table->unsignedBigInteger('role_id');
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
         });
 
         Schema::create('user_system_actions', function (Blueprint $table) {
