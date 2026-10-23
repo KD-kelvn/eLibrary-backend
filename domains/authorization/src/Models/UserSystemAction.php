@@ -4,12 +4,11 @@ namespace Modules\Authorization\Models;
 
 use App\Models\BaseModelWithAudits;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Schema;
 use Modules\Authentication\Models\User;
 
 class UserSystemAction extends BaseModelWithAudits
 {
-    protected $table = 'auth.user_system_actions';
-
     protected $fillable = [
         'user_id',
         'system_action_id',
@@ -21,6 +20,13 @@ class UserSystemAction extends BaseModelWithAudits
         'updated_at',
         'deleted_at',
     ];
+
+    public function getTable(): string
+    {
+        return Schema::getConnection()->getDriverName() === 'pgsql'
+            ? 'auth.user_system_actions'
+            : 'user_system_actions';
+    }
 
     public function user(): BelongsTo
     {

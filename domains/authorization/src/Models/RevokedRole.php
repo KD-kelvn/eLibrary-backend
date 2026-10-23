@@ -4,12 +4,11 @@ namespace Modules\Authorization\Models;
 
 use App\Models\BaseModelWithAudits;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Schema;
 use Modules\Authentication\Models\User;
 
 class RevokedRole extends BaseModelWithAudits
 {
-    protected $table = 'auth.revoked_roles';
-
     protected $fillable = [
         'user_role_id',
         'revoked_by',
@@ -28,6 +27,13 @@ class RevokedRole extends BaseModelWithAudits
         return [
             'revoked_at' => 'datetime',
         ];
+    }
+
+    public function getTable(): string
+    {
+        return Schema::getConnection()->getDriverName() === 'pgsql'
+            ? 'auth.revoked_roles'
+            : 'revoked_roles';
     }
 
     public function userRole(): BelongsTo

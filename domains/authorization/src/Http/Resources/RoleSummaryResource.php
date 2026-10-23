@@ -20,6 +20,7 @@ class RoleSummaryResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'code' => $this->code,
+            'isSystem' => (bool) $this->is_system,
             'status' => [
                 'value' => $this->status?->value,
                 'label' => $this->status?->label(),

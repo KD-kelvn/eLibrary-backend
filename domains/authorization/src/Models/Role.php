@@ -6,17 +6,17 @@ use App\Models\BaseModelWithAudits;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Support\Facades\Schema;
 use Modules\Authorization\Enums\RoleStatusEnum;
 
 class Role extends BaseModelWithAudits
 {
-    protected $table = 'auth.roles';
-
     protected $fillable = [
         'name',
         'description',
         'status',
         'code',
+        'is_system',
         'created_by',
         'updated_by',
         'deleted_by',
@@ -29,7 +29,15 @@ class Role extends BaseModelWithAudits
     {
         return [
             'status' => RoleStatusEnum::class,
+            'is_system' => 'boolean',
         ];
+    }
+
+    public function getTable(): string
+    {
+        return Schema::getConnection()->getDriverName() === 'pgsql'
+            ? 'auth.roles'
+            : 'roles';
     }
 
     public function userRoles(): HasMany
