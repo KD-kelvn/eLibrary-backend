@@ -85,6 +85,7 @@ class AdminPermissionSeeder extends Seeder
                 'items' => [
                     ['name' => 'Appearance', 'code' => 'appearance', 'route' => '/admin/settings/appearance', 'sort_order' => 10],
                     ['name' => 'Login slider', 'code' => 'login-slider', 'route' => '/admin/settings/login-slider', 'sort_order' => 20],
+                    ['name' => 'Library settings', 'code' => 'library-settings', 'route' => '/admin/settings/library', 'sort_order' => 25],
                     ['name' => 'Borrowing processes', 'code' => 'borrowing-processes', 'route' => '/admin/settings/borrowing-processes', 'sort_order' => 30],
                     ['name' => 'Penalty policies', 'code' => 'penalty-policies', 'route' => '/admin/settings/penalty-policies', 'sort_order' => 40],
                 ],
