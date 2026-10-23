@@ -5,14 +5,23 @@ namespace Modules\Settings\Providers;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Modules\Settings\Console\Commands\ActivatePendingSettingsCommand;
 use Modules\Settings\Models\Branding;
 use Modules\Settings\Models\LoginSlide;
 use Modules\Settings\Policies\BrandingPolicy;
 use Modules\Settings\Policies\LoginSlidePolicy;
+use Modules\Settings\Services\SettingsService;
+use Modules\Settings\Support\SettingsCache;
+use Modules\Settings\Support\SettingsRegistry;
 
 class SettingsServiceProvider extends ServiceProvider
 {
-    public function register(): void {}
+    public function register(): void
+    {
+        $this->app->singleton(SettingsRegistry::class);
+        $this->app->singleton(SettingsCache::class);
+        $this->app->singleton(SettingsService::class);
+    }
 
     public function boot(): void
     {
@@ -24,5 +33,11 @@ class SettingsServiceProvider extends ServiceProvider
         Route::middleware('api')
             ->prefix('api/settings')
             ->group(__DIR__.'/../../api-routes/settings-routes.php');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                ActivatePendingSettingsCommand::class,
+            ]);
+        }
     }
 }

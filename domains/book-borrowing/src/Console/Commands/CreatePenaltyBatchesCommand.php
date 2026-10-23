@@ -28,7 +28,7 @@ class CreatePenaltyBatchesCommand extends Command
             $created = $service->createBatchesForOverdue();
 
             if ($created === 0) {
-                $message = 'No new penalty batches created (no overdue issued borrows, or no active penalty policy).';
+                $message = 'No new penalty batches created (no overdue issued borrows past grace).';
                 $log->info($message, ['created' => 0]);
                 $this->comment($message);
             } else {
