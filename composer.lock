@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3273001236826119a82184fc2f8cbd60",
+    "content-hash": "d37f7668f1c679c541ad1cbd8abb6c1b",
     "packages": [
         {
             "name": "brick/math",
@@ -3390,7 +3390,7 @@
             "dist": {
                 "type": "path",
                 "url": "domains/academic",
-                "reference": "5c3b3bf46a2ef56d2e5dd522522c1ef35a533d53"
+                "reference": "1dafde600ea7dde7a7acff7eac237fc1fdbd4b33"
             },
             "type": "library",
             "extra": {
@@ -3411,6 +3411,7 @@
             "license": [
                 "proprietary"
             ],
+            "description": "Academic master data (faculties, departments, programmes, courses)",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -3571,6 +3572,39 @@
             "license": [
                 "proprietary"
             ],
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "modules/notifications",
+            "version": "1.0",
+            "dist": {
+                "type": "path",
+                "url": "domains/notifications",
+                "reference": "e8b5cf9f30572123270fe10227cc75a9deddc493"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Modules\\Notifications\\Providers\\NotificationsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Notifications\\": "src/",
+                    "Modules\\Notifications\\Tests\\": "tests/",
+                    "Modules\\Notifications\\Database\\Factories\\": "database/factories/",
+                    "Modules\\Notifications\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "In-app, email and SMS notification preferences, deliveries and APIs",
             "transport-options": {
                 "symlink": true,
                 "relative": true

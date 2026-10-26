@@ -6,6 +6,7 @@ namespace Modules\Authentication\Models;
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -14,6 +15,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Modules\Authorization\Models\UserRole;
 use Modules\Authorization\Models\UserSystemAction;
 use Modules\BookReading\Models\ReadingHistory;
+use Modules\Notifications\Models\DatabaseNotification;
 use Yajra\Auditable\AuditableWithDeletesTrait;
 
 class User extends Authenticatable
@@ -125,5 +127,15 @@ class User extends Authenticatable
     public function readingHistories(): HasMany
     {
         return $this->hasMany(ReadingHistory::class, 'user_id');
+    }
+
+    public function notifications(): MorphMany
+    {
+        return $this->morphMany(DatabaseNotification::class, 'notifiable')->latest();
+    }
+
+    public function routeNotificationForLogSms(): ?string
+    {
+        return $this->phone;
     }
 }

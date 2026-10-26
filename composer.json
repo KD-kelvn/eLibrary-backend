@@ -38,7 +38,8 @@
         "spatie/pdf-to-text": "^1.55",
         "spatie/simple-excel": "^3.9",
         "spatie/temporary-directory": "^2.4",
-        "yajra/laravel-auditable": "^12.0"
+        "yajra/laravel-auditable": "^12.0",
+        "modules/notifications": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

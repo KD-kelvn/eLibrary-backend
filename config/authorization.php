@@ -212,6 +212,13 @@ return [
         'PATCH api/academic/courses/{course}' => ['academic.manage'],
         'DELETE api/academic/courses/{course}' => ['academic.manage'],
 
+        // Notifications (own inbox + preferences)
+        'GET api/notifications' => [],
+        'POST api/notifications/read-all' => [],
+        'POST api/notifications/{notification}/read' => [],
+        'GET api/notifications/preferences' => ['notifications.preferences'],
+        'PUT api/notifications/preferences' => ['notifications.preferences'],
+
         // Reading
         'GET api/book-reading/member/dashboard' => ['reading.read', 'catalogue.view'],
         'GET api/book-reading/reading-histories' => ['reading.history.view', 'readings.export', 'librarian.readings.export'],
