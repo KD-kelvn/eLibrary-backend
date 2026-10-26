@@ -50,4 +50,9 @@ class AuthenticationException extends RuntimeException
     {
         return new self('This account is temporarily locked. Try again later.', 403);
     }
+
+    public static function unprocessable(string $message): self
+    {
+        return new self($message, 422);
+    }
 }
