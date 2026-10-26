@@ -18,6 +18,7 @@ class IndexUserRequest extends FormRequest
             'search' => ['nullable', 'string', 'max:255'],
             'role_id' => ['nullable', 'integer', 'exists:'.SchemaTable::forValidation('auth.roles').',id'],
             'is_blocked' => ['nullable', 'boolean'],
+            'is_active' => ['nullable', 'boolean'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }

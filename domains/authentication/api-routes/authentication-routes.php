@@ -30,7 +30,9 @@ Route::prefix('auth')->group(function () {
         Route::delete('admin/sessions/by-user/{user}', [SessionController::class, 'destroyForUser']);
         Route::delete('admin/sessions/{personalAccessToken}', [SessionController::class, 'destroy']);
 
-        Route::apiResource('users', UserManagementController::class);
+        Route::apiResource('users', UserManagementController::class)->except(['destroy']);
         Route::patch('users/{user}/blocked', [UserManagementController::class, 'setBlocked']);
+        Route::patch('users/{user}/active', [UserManagementController::class, 'setActive']);
+        Route::post('users/{user}/photo', [UserManagementController::class, 'storePhoto']);
     });
 });

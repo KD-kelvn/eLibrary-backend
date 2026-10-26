@@ -60,7 +60,11 @@ class LastAdminGuard
         return UserRole::query()
             ->where('role_id', $adminRoleId)
             ->active()
-            ->whereHas('user', fn ($q) => $q->where('is_blocked', false))
+            ->whereHas('user', fn ($q) => $q
+                ->where('is_blocked', false)
+                ->where(fn ($active) => $active
+                    ->where('is_active', true)
+                    ->orWhereNull('is_active')))
             ->count();
     }
 
@@ -68,6 +72,9 @@ class LastAdminGuard
     {
         return User::query()
             ->where('is_blocked', false)
+            ->where(fn ($query) => $query
+                ->where('is_active', true)
+                ->orWhereNull('is_active'))
             ->whereHas('activeUserRoles', function ($query) {
                 $query->whereHas('role', fn ($roles) => $roles->where('code', 'admin'));
             })

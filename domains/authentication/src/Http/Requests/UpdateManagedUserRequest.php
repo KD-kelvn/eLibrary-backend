@@ -20,6 +20,9 @@ class UpdateManagedUserRequest extends FormRequest
     public function rules(): array
     {
         $id = $this->route('user');
+        $faculties = SchemaTable::forValidation('academic.faculties');
+        $departments = SchemaTable::forValidation('academic.departments');
+        $programmes = SchemaTable::forValidation('academic.programmes');
 
         return [
             'username' => ['sometimes', 'required', 'string', 'max:100', Rule::unique(SchemaTable::forValidation('auth.users'), 'username')->ignore($id)],
@@ -34,6 +37,10 @@ class UpdateManagedUserRequest extends FormRequest
             'locale' => ['sometimes', 'string', 'max:10', 'in:en,sw'],
             'break_glass' => ['sometimes', 'boolean'],
             'deactivated_reason' => ['sometimes', 'nullable', 'string', 'max:1000'],
+            'faculty_id' => ['sometimes', 'nullable', 'integer', 'exists:'.$faculties.',id'],
+            'department_id' => ['sometimes', 'nullable', 'integer', 'exists:'.$departments.',id'],
+            'programme_id' => ['sometimes', 'nullable', 'integer', 'exists:'.$programmes.',id'],
+            'year_of_study' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:10'],
         ];
     }
 }

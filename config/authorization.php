@@ -31,8 +31,9 @@ return [
         'GET api/auth/users/{user}' => ['users.manage', 'users.update'],
         'PUT api/auth/users/{user}' => ['users.manage', 'users.update'],
         'PATCH api/auth/users/{user}' => ['users.manage', 'users.update'],
-        'DELETE api/auth/users/{user}' => ['users.manage', 'users.delete'],
         'PATCH api/auth/users/{user}/blocked' => ['users.manage', 'users.block'],
+        'PATCH api/auth/users/{user}/active' => ['users.manage', 'users.update', 'users.delete'],
+        'POST api/auth/users/{user}/photo' => ['users.manage', 'users.update'],
         'GET api/auth/users/{user}/system-actions' => ['permissions.assign', 'actions.update'],
         'PUT api/auth/users/{user}/system-actions' => ['permissions.assign', 'actions.update'],
 

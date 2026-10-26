@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Modules\Authentication\Exceptions\AuthenticationException;
 use Modules\Authentication\Http\Requests\IndexUserRequest;
+use Modules\Authentication\Http\Requests\SetUserActiveRequest;
 use Modules\Authentication\Http\Requests\SetUserBlockedRequest;
 use Modules\Authentication\Http\Requests\StoreManagedUserRequest;
+use Modules\Authentication\Http\Requests\StoreUserPhotoRequest;
 use Modules\Authentication\Http\Requests\UpdateManagedUserRequest;
 use Modules\Authentication\Http\Resources\ManagedUserResource;
 use Modules\Authentication\Services\UserManagementService;
@@ -87,16 +89,46 @@ class UserManagementController extends Controller
         }
     }
 
-    public function destroy(string $user): JsonResponse
+    public function setActive(SetUserActiveRequest $request, string $user): JsonResponse
     {
         try {
-            $model = $this->service->show((int) $user);
-            $this->authorize('delete', $model);
-            $this->service->destroy((int) $user);
+            if ((int) $user === (int) $request->user()->id && ! $request->boolean('active')) {
+                return $this->failResponse(null, 'You cannot deactivate your own account.', 422);
+            }
 
-            return $this->successResponse(null, 'User deleted.');
+            $updated = $this->service->setActive(
+                (int) $user,
+                $request->boolean('active'),
+                $request->input('reason'),
+            );
+
+            return $this->successResponse(
+                ManagedUserResource::make($updated),
+                $request->boolean('active') ? 'User reactivated.' : 'User deactivated.',
+            );
         } catch (AuthenticationException $exception) {
-            return $this->failResponse(null, $exception->getMessage(), $exception->getCode() ?: 404);
+            return $this->failResponse(null, $exception->getMessage(), $exception->getCode() ?: 422);
         }
+    }
+
+    public function storePhoto(StoreUserPhotoRequest $request, string $user): JsonResponse
+    {
+        try {
+            $updated = $this->service->storePhoto((int) $user, $request->file('photo'));
+
+            return $this->successResponse(ManagedUserResource::make($updated), 'User photo updated.');
+        } catch (AuthenticationException $exception) {
+            return $this->failResponse(null, $exception->getMessage(), $exception->getCode() ?: 422);
+        }
+    }
+
+    public function destroy(string $user): JsonResponse
+    {
+        // FR-USR-05 / TC-USR-04: hard delete removed.
+        return $this->failResponse(
+            null,
+            'Users cannot be deleted. Deactivate the account instead.',
+            405,
+        );
     }
 }
