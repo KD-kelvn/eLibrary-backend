@@ -13,7 +13,7 @@ trait GuardsAccountAccess
             throw AuthenticationException::accountBlocked();
         }
 
-        if (! $user->is_active) {
+        if ($user->is_active === false) {
             throw AuthenticationException::accountInactive();
         }
 

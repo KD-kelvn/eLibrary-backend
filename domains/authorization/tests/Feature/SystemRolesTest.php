@@ -155,6 +155,8 @@ class SystemRolesTest extends TestCase
             $table->string('phone')->nullable();
             $table->string('password')->nullable();
             $table->boolean('is_blocked')->default(false);
+            $table->boolean('is_active')->default(true);
+            $table->timestampTz('locked_until')->nullable();
             $table->rememberToken();
             $table->timestamp('email_verified_at')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();

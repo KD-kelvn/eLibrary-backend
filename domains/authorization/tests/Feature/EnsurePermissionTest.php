@@ -190,6 +190,8 @@ class EnsurePermissionTest extends TestCase
             $table->string('email')->unique();
             $table->string('password');
             $table->boolean('is_blocked')->default(false);
+            $table->boolean('is_active')->default(true);
+            $table->timestampTz('locked_until')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->unsignedBigInteger('deleted_by')->nullable();

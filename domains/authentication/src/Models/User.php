@@ -83,7 +83,7 @@ class User extends Authenticatable
      */
     public function canAuthenticate(): bool
     {
-        return $this->is_active
+        return $this->is_active !== false
             && ! $this->is_blocked
             && ! $this->isLocked();
     }

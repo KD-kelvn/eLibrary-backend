@@ -23,7 +23,7 @@ class EnsureUserIsNotBlocked
             return $this->denied('This account has been blocked from using the system.');
         }
 
-        if (! $user->is_active) {
+        if ($user->is_active === false) {
             $user->tokens()->delete();
 
             return $this->denied('This account is inactive.');
