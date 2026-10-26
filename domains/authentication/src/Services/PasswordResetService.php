@@ -10,10 +10,12 @@ use Modules\Authentication\Models\OneTimeToken;
 use Modules\Authentication\Models\User;
 use Modules\Authentication\Repositories\OneTimeTokenRepository;
 use Modules\Authentication\Repositories\UserRepository;
+use Modules\Authentication\Services\Concerns\GuardsAccountAccess;
 use Modules\Authentication\Services\Concerns\ResolvesAuthenticatedUser;
 
 class PasswordResetService
 {
+    use GuardsAccountAccess;
     use ResolvesAuthenticatedUser;
 
     public function __construct(
@@ -53,9 +55,7 @@ class PasswordResetService
             OneTimeTokenVia::Email,
         );
 
-        if ($user->is_blocked) {
-            throw AuthenticationException::accountBlocked();
-        }
+        $this->assertCanAuthenticate($user);
 
         $this->findValidToken($user, $data['token'], OneTimeTokenPurpose::PasswordReset);
 
@@ -76,9 +76,7 @@ class PasswordResetService
             OneTimeTokenVia::Email,
         );
 
-        if ($user->is_blocked) {
-            throw AuthenticationException::accountBlocked();
-        }
+        $this->assertCanAuthenticate($user);
 
         $token = $this->findValidToken(
             $user,

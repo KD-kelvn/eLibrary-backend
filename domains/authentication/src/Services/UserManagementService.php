@@ -9,6 +9,7 @@ use Modules\Authentication\Exceptions\AuthenticationException;
 use Modules\Authentication\Models\User;
 use Modules\Authentication\Repositories\UserProfileRepository;
 use Modules\Authentication\Repositories\UserRepository;
+use Modules\Authentication\Support\PhoneNumberNormalizer;
 use Modules\Authorization\Enums\RoleStatusEnum;
 use Modules\Authorization\Models\Role;
 use Modules\Authorization\Models\UserRole;
@@ -22,6 +23,7 @@ class UserManagementService
         private readonly UserRepository $users,
         private readonly UserProfileRepository $profiles,
         private readonly LastAdminGuard $lastAdmin,
+        private readonly PhoneNumberNormalizer $phones,
     ) {}
 
     public function list(array $filters, int $perPage): LengthAwarePaginator
@@ -50,6 +52,7 @@ class UserManagementService
             );
         }
 
+        $data = $this->normalizeCredentialPayload($data);
         $this->assertUniqueCredentials($data);
 
         return DB::transaction(function () use ($data, $assignedBy, $role) {
@@ -59,6 +62,9 @@ class UserManagementService
                 'phone' => $data['phone'] ?? null,
                 'password' => $data['password'],
                 'is_blocked' => $data['is_blocked'] ?? false,
+                'is_active' => $data['is_active'] ?? true,
+                'locale' => $data['locale'] ?? 'en',
+                'break_glass' => $data['break_glass'] ?? false,
             ]);
 
             $this->profiles->createForUser($user->id, [
@@ -95,6 +101,8 @@ class UserManagementService
     {
         $user = $this->show($id);
 
+        $data = $this->normalizeCredentialPayload($data);
+
         return DB::transaction(function () use ($user, $data) {
             $userData = collect($data)->only([
                 'username',
@@ -102,6 +110,11 @@ class UserManagementService
                 'phone',
                 'password',
                 'is_blocked',
+                'is_active',
+                'locale',
+                'break_glass',
+                'deactivated_reason',
+                'locked_until',
             ])->all();
 
             $profileData = collect($data)->only([
@@ -176,6 +189,27 @@ class UserManagementService
         );
 
         $this->users->delete($user);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function normalizeCredentialPayload(array $data): array
+    {
+        if (array_key_exists('phone', $data)) {
+            $data['phone'] = $this->phones->normalize($data['phone'] ?? null);
+        }
+
+        if (array_key_exists('email', $data) && is_string($data['email'])) {
+            $data['email'] = strtolower(trim($data['email']));
+        }
+
+        if (array_key_exists('username', $data) && is_string($data['username'])) {
+            $data['username'] = trim($data['username']);
+        }
+
+        return $data;
     }
 
     private function assertUniqueCredentials(array $data): void

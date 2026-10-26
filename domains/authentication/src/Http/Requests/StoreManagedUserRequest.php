@@ -28,6 +28,9 @@ class StoreManagedUserRequest extends FormRequest
             'role_id' => ['required', 'integer', 'exists:'.SchemaTable::forValidation('auth.roles').',id'],
             'expires_at' => ['nullable', 'date', 'after_or_equal:today'],
             'is_blocked' => ['nullable', 'boolean'],
+            'is_active' => ['nullable', 'boolean'],
+            'locale' => ['nullable', 'string', 'max:10', 'in:en,sw'],
+            'break_glass' => ['nullable', 'boolean'],
         ];
     }
 }

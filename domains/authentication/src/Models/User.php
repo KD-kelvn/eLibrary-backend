@@ -32,6 +32,11 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'is_blocked',
+        'is_active',
+        'deactivated_reason',
+        'break_glass',
+        'locked_until',
+        'locale',
     ];
 
     /**
@@ -47,7 +52,7 @@ class User extends Authenticatable
     /**
      * Get the attributes that should be cast.
      *
-     * @return array<string, string>
+     * @return array<string, mixed>
      */
     protected function casts(): array
     {
@@ -55,6 +60,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_blocked' => 'boolean',
+            'is_active' => 'boolean',
+            'break_glass' => 'boolean',
+            'locked_until' => 'datetime',
         ];
     }
 
@@ -63,6 +71,21 @@ class User extends Authenticatable
         return Schema::getConnection()->getDriverName() === 'pgsql'
             ? 'auth.users'
             : 'users';
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->locked_until !== null && $this->locked_until->isFuture();
+    }
+
+    /**
+     * Account may authenticate (active, not blocked, not lockout).
+     */
+    public function canAuthenticate(): bool
+    {
+        return $this->is_active
+            && ! $this->is_blocked
+            && ! $this->isLocked();
     }
 
     public function profile(): HasOne

@@ -18,6 +18,10 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'phone' => $this->phone,
             'is_blocked' => $this->is_blocked,
+            'is_active' => $this->is_active,
+            'locale' => $this->locale ?? 'en',
+            'locked_until' => $this->locked_until?->toIso8601String(),
+            'break_glass' => (bool) $this->break_glass,
             'email_verified_at' => $this->email_verified_at?->toIso8601String(),
             'profile' => UserProfileResource::make($this->whenLoaded('profile')),
         ];

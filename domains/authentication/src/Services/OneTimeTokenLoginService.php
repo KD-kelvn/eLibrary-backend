@@ -10,11 +10,13 @@ use Modules\Authentication\Models\OneTimeToken;
 use Modules\Authentication\Models\User;
 use Modules\Authentication\Repositories\OneTimeTokenRepository;
 use Modules\Authentication\Repositories\UserRepository;
+use Modules\Authentication\Services\Concerns\GuardsAccountAccess;
 use Modules\Authentication\Services\Concerns\IssuesApiTokens;
 use Modules\Authentication\Services\Concerns\ResolvesAuthenticatedUser;
 
 class OneTimeTokenLoginService
 {
+    use GuardsAccountAccess;
     use IssuesApiTokens;
     use ResolvesAuthenticatedUser;
 
@@ -33,10 +35,7 @@ class OneTimeTokenLoginService
             : OneTimeTokenPurpose::Login;
 
         $user = $this->resolveUserForOneTimeTokenChannel($this->users, $data['identifier'], $via);
-
-        if ($user->is_blocked) {
-            throw AuthenticationException::accountBlocked();
-        }
+        $this->assertCanAuthenticate($user);
 
         $this->tokens->revokeActiveForUser($user, $purpose);
 
@@ -72,10 +71,7 @@ class OneTimeTokenLoginService
             : OneTimeTokenPurpose::Login;
 
         $user = $this->resolveUserByIdentifier($this->users, $data['identifier']);
-
-        if ($user->is_blocked) {
-            throw AuthenticationException::accountBlocked();
-        }
+        $this->assertCanAuthenticate($user);
 
         $token = $this->findValidToken($user, $data['token'], $purpose);
 
