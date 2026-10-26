@@ -7,20 +7,13 @@ use Modules\Authentication\Enums\OneTimeTokenVia;
 use Modules\Authentication\Exceptions\AuthenticationException;
 use Modules\Authentication\Models\User;
 use Modules\Authentication\Repositories\UserRepository;
-use Modules\Authentication\Support\CredentialResolver;
+use Modules\Authentication\Services\IdentifierLookupService;
 
 trait ResolvesAuthenticatedUser
 {
     protected function resolveUserByIdentifier(UserRepository $users, string $identifier): User
     {
-        $type = CredentialResolver::detect($identifier);
-        $user = $users->findByCredential($identifier, $type);
-
-        if ($user === null) {
-            throw AuthenticationException::userNotFound();
-        }
-
-        return $user;
+        return app(IdentifierLookupService::class)->findOrFail($identifier);
     }
 
     protected function resolveUserForOneTimeTokenChannel(
@@ -28,12 +21,14 @@ trait ResolvesAuthenticatedUser
         string $identifier,
         OneTimeTokenVia $via,
     ): User {
+        $lookup = app(IdentifierLookupService::class);
         $type = match ($via) {
             OneTimeTokenVia::Email => CredentialType::Email,
             OneTimeTokenVia::Phone => CredentialType::Phone,
         };
 
-        $user = $users->findByCredential($identifier, $type);
+        $normalized = $lookup->normalize($identifier, $type);
+        $user = $users->findByCredential($normalized, $type);
 
         if ($user === null) {
             throw AuthenticationException::userNotFound();

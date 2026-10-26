@@ -30,6 +30,10 @@ class UpdateManagedUserRequest extends FormRequest
             'gender' => ['sometimes', 'nullable', 'string', 'max:50'],
             'dob' => ['sometimes', 'nullable', 'date', 'before:today'],
             'is_blocked' => ['sometimes', 'boolean'],
+            'is_active' => ['sometimes', 'boolean'],
+            'locale' => ['sometimes', 'string', 'max:10', 'in:en,sw'],
+            'break_glass' => ['sometimes', 'boolean'],
+            'deactivated_reason' => ['sometimes', 'nullable', 'string', 'max:1000'],
         ];
     }
 }

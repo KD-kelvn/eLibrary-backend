@@ -9,12 +9,14 @@
             <directory>tests/Unit</directory>
             <directory>domains/settings/tests/Unit</directory>
             <directory>domains/authorization/tests/Unit</directory>
+            <directory>domains/authentication/tests/Unit</directory>
         </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
             <directory>domains/settings/tests/Feature</directory>
             <directory>domains/authorization/tests/Feature</directory>
             <directory>domains/academic/tests/Feature</directory>
+            <directory>domains/authentication/tests/Feature</directory>
         </testsuite>
     </testsuites>
     <source>
