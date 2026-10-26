@@ -40,6 +40,15 @@ class AdminPermissionSeeder extends Seeder
                 ],
             ],
             [
+                'name' => 'Academic',
+                'code' => 'academic',
+                'icon_code' => 'school',
+                'sort_order' => 25,
+                'items' => [
+                    ['name' => 'Faculties & programmes', 'code' => 'academic-master', 'route' => '/admin/academic', 'sort_order' => 10],
+                ],
+            ],
+            [
                 'name' => 'Permissions',
                 'code' => 'permissions',
                 'icon_code' => 'permissions',
