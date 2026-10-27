@@ -29,7 +29,7 @@ class UserSystemActionService
         $action = SystemAction::query()->find($data['system_action_id'])
             ?? throw AuthorizationException::notFound('System action');
 
-        $userRole = $this->resolveActiveUserRole($user, (int) $action->role_id);
+        $userRole = $this->resolveActiveUserRoleForAction($user, $action);
 
         if ($grant = UserSystemAction::withTrashed()->where([
             'user_id' => $user->id,
@@ -60,8 +60,11 @@ class UserSystemActionService
                 'user_id' => $user->id,
                 'system_action_id' => $action->id,
                 'role_id' => $action->role_id,
+                'before' => null,
+                'after' => ['system_action_id' => $action->id, 'code' => $action->code],
             ],
-            event: 'assigned',
+            logName: 'authorization',
+            event: 'permission.changed',
         );
 
         return $grant->load('systemAction:id,role_id,name,code,action_type,is_active');
@@ -78,8 +81,11 @@ class UserSystemActionService
             [
                 'user_id' => $grant->user_id,
                 'system_action_id' => $grant->system_action_id,
+                'before' => ['system_action_id' => $grant->system_action_id],
+                'after' => null,
             ],
-            event: 'revoked',
+            logName: 'authorization',
+            event: 'permission.changed',
         );
 
         $grant->delete();
@@ -109,16 +115,18 @@ class UserSystemActionService
                 throw AuthorizationException::unprocessable('One or more actions were not found.');
             }
 
-            $roleIds = $user
-                ->activeUserRoles()
-                ->pluck('role_id')
+            $beforeIds = UserSystemAction::query()
+                ->where('user_id', $user->id)
+                ->pluck('system_action_id')
                 ->map(fn ($id) => (int) $id)
+                ->sort()
+                ->values()
                 ->all();
 
             foreach ($actions as $action) {
-                if (! in_array((int) $action->role_id, $roleIds, true)) {
+                if (! $this->userHoldsActionRole($user, $action)) {
                     throw AuthorizationException::unprocessable(
-                        "Action \"{$action->code}\" cannot be granted because the user does not hold its owning role.",
+                        "Action \"{$action->code}\" cannot be granted because the user does not hold a linked role.",
                     );
                 }
             }
@@ -142,7 +150,7 @@ class UserSystemActionService
                 }
 
                 $action = $actions->get((int) $grant->system_action_id);
-                $userRole = $this->resolveActiveUserRole($user, (int) $action->role_id);
+                $userRole = $this->resolveActiveUserRoleForAction($user, $action);
                 $grant->update(['user_role_id' => $userRole->id]);
             }
 
@@ -152,7 +160,7 @@ class UserSystemActionService
                 }
 
                 $action = $actions->get($actionId);
-                $userRole = $this->resolveActiveUserRole($user, (int) $action->role_id);
+                $userRole = $this->resolveActiveUserRoleForAction($user, $action);
 
                 UserSystemAction::query()->create([
                     'user_id' => $user->id,
@@ -164,8 +172,12 @@ class UserSystemActionService
             AdminActivity::log(
                 'User action grants synced',
                 $user,
-                ['action_ids' => $actionIds->all()],
-                event: 'updated',
+                [
+                    'before' => ['action_ids' => $beforeIds],
+                    'after' => ['action_ids' => $actionIds->sort()->values()->all()],
+                ],
+                logName: 'authorization',
+                event: 'permission.changed',
             );
 
             return $this->listForUser($user->id);
@@ -188,19 +200,41 @@ class UserSystemActionService
             ->each(fn (UserSystemAction $grant) => $grant->delete());
     }
 
-    private function resolveActiveUserRole(User $user, int $roleId): UserRole
+    private function resolveActiveUserRoleForAction(User $user, SystemAction $action): UserRole
     {
+        $linkedRoleIds = $this->linkedRoleIds($action);
+
         $userRole = $user
             ->activeUserRoles()
-            ->where('role_id', $roleId)
+            ->whereIn('role_id', $linkedRoleIds)
             ->first();
 
         if (! $userRole) {
             throw AuthorizationException::unprocessable(
-                "The user must hold the action's role before actions can be assigned.",
+                "The user must hold a role linked to action \"{$action->code}\" before it can be assigned.",
             );
         }
 
         return $userRole;
+    }
+
+    private function userHoldsActionRole(User $user, SystemAction $action): bool
+    {
+        return $user->activeUserRoles()
+            ->whereIn('role_id', $this->linkedRoleIds($action))
+            ->exists();
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function linkedRoleIds(SystemAction $action): array
+    {
+        return $action->roles()->get()->pluck('id')
+            ->push((int) $action->role_id)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 }

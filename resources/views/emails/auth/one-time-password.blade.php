@@ -28,7 +28,7 @@
         <td align="center" style="padding:22px 16px;">
             <p
              style="margin:0 0 8px 0;font-size:12px;line-height:1.4;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#71717A;">
-                One-time code
+                {{ $codeLabel ?? 'One-time code' }}
             </p>
             <p class="otp-code"
              style="margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;font-size:32px;line-height:1.2;font-weight:700;letter-spacing:0.35em;color:#0A0A0A;">

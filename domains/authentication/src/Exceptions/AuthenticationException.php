@@ -40,4 +40,19 @@ class AuthenticationException extends RuntimeException
     {
         return new self('This account has been blocked from using the system.', 403);
     }
+
+    public static function accountInactive(): self
+    {
+        return new self('This account is inactive.', 403);
+    }
+
+    public static function accountLocked(): self
+    {
+        return new self('This account is temporarily locked. Try again later.', 403);
+    }
+
+    public static function unprocessable(string $message): self
+    {
+        return new self($message, 422);
+    }
 }

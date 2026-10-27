@@ -40,6 +40,15 @@ class AdminPermissionSeeder extends Seeder
                 ],
             ],
             [
+                'name' => 'Academic',
+                'code' => 'academic',
+                'icon_code' => 'school',
+                'sort_order' => 25,
+                'items' => [
+                    ['name' => 'Faculties & programmes', 'code' => 'academic-master', 'route' => '/admin/academic', 'sort_order' => 10],
+                ],
+            ],
+            [
                 'name' => 'Permissions',
                 'code' => 'permissions',
                 'icon_code' => 'permissions',
@@ -85,6 +94,7 @@ class AdminPermissionSeeder extends Seeder
                 'items' => [
                     ['name' => 'Appearance', 'code' => 'appearance', 'route' => '/admin/settings/appearance', 'sort_order' => 10],
                     ['name' => 'Login slider', 'code' => 'login-slider', 'route' => '/admin/settings/login-slider', 'sort_order' => 20],
+                    ['name' => 'Library settings', 'code' => 'library-settings', 'route' => '/admin/settings/library', 'sort_order' => 25],
                     ['name' => 'Borrowing processes', 'code' => 'borrowing-processes', 'route' => '/admin/settings/borrowing-processes', 'sort_order' => 30],
                     ['name' => 'Penalty policies', 'code' => 'penalty-policies', 'route' => '/admin/settings/penalty-policies', 'sort_order' => 40],
                 ],

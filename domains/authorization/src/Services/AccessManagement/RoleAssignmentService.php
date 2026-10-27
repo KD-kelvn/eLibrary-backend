@@ -4,15 +4,19 @@ namespace Modules\Authorization\Services\AccessManagement;
 
 use App\Support\AdminActivity;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Modules\Authorization\Exceptions\AuthorizationException;
 use Modules\Authorization\Models\UserRole;
 use Modules\Authorization\Repositories\AccessManagement\RoleAssignmentRepository;
+use Modules\Authorization\Services\LastAdminGuard;
 
 class RoleAssignmentService
 {
     public function __construct(
         protected RoleAssignmentRepository $repository,
         protected UserSystemActionService $userActions,
+        protected RoleActionGrantService $grants,
+        protected LastAdminGuard $lastAdmin,
     ) {}
 
     public function list(array $filters = [], int $perPage = 15): LengthAwarePaginator
@@ -39,25 +43,35 @@ class RoleAssignmentService
             );
         }
 
-        $assignment = $this->repository->create([
-            'user_id' => $data['user_id'],
-            'role_id' => $data['role_id'],
-            'assigned_by' => $assignedBy,
-            'expires_at' => $data['expires_at'] ?? null,
-            'assigned_at' => now(),
-        ]);
+        return DB::transaction(function () use ($data, $assignedBy) {
+            $assignment = $this->repository->create([
+                'user_id' => $data['user_id'],
+                'role_id' => $data['role_id'],
+                'assigned_by' => $assignedBy,
+                'expires_at' => $data['expires_at'] ?? null,
+                'assigned_at' => now(),
+            ]);
 
-        AdminActivity::log(
-            'Role assigned to user',
-            $assignment,
-            [
-                'user_id' => $assignment->user_id,
-                'role_id' => $assignment->role_id,
-            ],
-            event: 'assigned',
-        );
+            $this->grants->grantDefaults($assignment);
 
-        return $assignment;
+            AdminActivity::log(
+                'Role assigned to user',
+                $assignment,
+                [
+                    'user_id' => $assignment->user_id,
+                    'role_id' => $assignment->role_id,
+                    'before' => null,
+                    'after' => [
+                        'user_id' => $assignment->user_id,
+                        'role_id' => $assignment->role_id,
+                    ],
+                ],
+                logName: 'authorization',
+                event: 'role.assigned',
+            );
+
+            return $assignment;
+        });
     }
 
     public function update(int $id, array $data): UserRole
@@ -90,14 +104,22 @@ class RoleAssignmentService
     {
         $assignment = $this->findOrFail($id);
 
+        $this->lastAdmin->assertCanRevokeAdminAssignment($assignment);
+
         AdminActivity::log(
             'Role assignment deleted',
             $assignment,
             [
                 'user_id' => $assignment->user_id,
                 'role_id' => $assignment->role_id,
+                'before' => [
+                    'user_id' => $assignment->user_id,
+                    'role_id' => $assignment->role_id,
+                ],
+                'after' => null,
             ],
-            event: 'deleted',
+            logName: 'authorization',
+            event: 'role.revoked',
         );
 
         $this->userActions->revokeForUserRole($assignment);

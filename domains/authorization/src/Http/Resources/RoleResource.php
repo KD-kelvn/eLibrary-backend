@@ -27,6 +27,7 @@ class RoleResource extends JsonResource
                 'icon' => $this->status?->icon(),
             ],
             'code' => $this->code,
+            'isSystem' => (bool) $this->is_system,
             'assignmentsCount' => $this->whenCounted('userRoles'),
             'activeAssignmentsCount' => $this->whenCounted('activeUserRoles'),
             'actionsCount' => $this->whenCounted('ownedSystemActions'),

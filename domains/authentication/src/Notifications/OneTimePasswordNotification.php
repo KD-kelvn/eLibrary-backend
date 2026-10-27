@@ -25,12 +25,14 @@ class OneTimePasswordNotification extends Notification
     {
         return match ($this->via) {
             OneTimeTokenVia::Email => ['mail'],
-            OneTimeTokenVia::Phone => ['log_sms'],
+            // Active SmsProvider (log | beem | institutional). Quiet hours do not apply to OTP.
+            OneTimeTokenVia::Phone => ['sms'],
         };
     }
 
     public function toMail(object $notifiable): MailMessage
     {
+        $locale = $this->localeFor($notifiable);
         $branding = app(MailBranding::class)->resolve();
         $isReset = $this->purpose === OneTimeTokenPurpose::PasswordReset;
 
@@ -42,20 +44,25 @@ class OneTimePasswordNotification extends Notification
             ?? $notifiable->username
             ?? null;
 
-        $title = $isReset ? 'Reset your password' : 'Your sign-in code';
+        $app = $branding['app_name'];
+        $title = $isReset
+            ? __('notifications.otp.reset_title', [], $locale)
+            : __('notifications.otp.login_title', [], $locale);
         $intro = $isReset
-            ? 'We received a request to reset the password for your '.$branding['app_name'].' account. Use the one-time code below to continue.'
-            : 'Use the one-time code below to finish signing in to your '.$branding['app_name'].' account.';
+            ? __('notifications.otp.reset_intro', ['app' => $app], $locale)
+            : __('notifications.otp.login_intro', ['app' => $app], $locale);
         $outro = $isReset
-            ? 'If you did not request a password reset, you can safely ignore this email. Your password will stay the same.'
-            : 'If you did not try to sign in, you can safely ignore this email.';
+            ? __('notifications.otp.reset_outro', [], $locale)
+            : __('notifications.otp.login_outro', [], $locale);
         $actionUrl = $isReset
             ? $branding['frontend_url'].'/authentication/forgot-password'
             : $branding['frontend_url'].'/authentication/login';
-        $actionText = $isReset ? 'Continue password reset' : 'Open '.$branding['app_name'];
+        $actionText = $isReset
+            ? __('notifications.otp.reset_action', [], $locale)
+            : __('notifications.otp.login_action', ['app' => $app], $locale);
         $subject = $isReset
-            ? $branding['app_name'].' password reset code'
-            : $branding['app_name'].' sign-in code';
+            ? __('notifications.otp.reset_email_subject', ['app' => $app], $locale)
+            : __('notifications.otp.login_email_subject', ['app' => $app], $locale);
 
         return BrandedMailMessage::make($subject)
             ->brandedView(
@@ -69,17 +76,35 @@ class OneTimePasswordNotification extends Notification
                     'actionUrl' => $actionUrl,
                     'actionText' => $actionText,
                     'outro' => $outro,
-                    'appName' => $branding['app_name'],
+                    'appName' => $app,
+                    'codeLabel' => __('notifications.otp.code_label', [], $locale),
                 ],
                 'emails.auth.one-time-password-text',
             );
     }
 
+    public function toSms(object $notifiable): string
+    {
+        $locale = $this->localeFor($notifiable);
+        $isReset = $this->purpose === OneTimeTokenPurpose::PasswordReset;
+        $key = $isReset ? 'notifications.otp.reset_sms' : 'notifications.otp.login_sms';
+
+        return (string) __($key, [
+            'code' => $this->code,
+            'minutes' => $this->expiryMinutes,
+        ], $locale);
+    }
+
+    /** @deprecated Use toSms() — kept for older log_sms channel callers. */
     public function toLogSms(object $notifiable): string
     {
-        $isReset = $this->purpose === OneTimeTokenPurpose::PasswordReset;
-        $label = $isReset ? 'password reset code' : 'login code';
+        return $this->toSms($notifiable);
+    }
 
-        return "Your {$label} is {$this->code}. It expires in {$this->expiryMinutes} minutes.";
+    protected function localeFor(object $notifiable): string
+    {
+        $locale = isset($notifiable->locale) ? (string) $notifiable->locale : 'en';
+
+        return in_array($locale, ['en', 'sw'], true) ? $locale : 'en';
     }
 }

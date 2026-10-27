@@ -6,12 +6,11 @@ use App\Models\BaseModelWithAudits;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Schema;
 use Modules\Authentication\Models\User;
 
 class UserRole extends BaseModelWithAudits
 {
-    protected $table = 'auth.user_roles';
-
     protected $fillable = [
         'user_id',
         'role_id',
@@ -32,6 +31,13 @@ class UserRole extends BaseModelWithAudits
             'expires_at' => 'date',
             'assigned_at' => 'datetime',
         ];
+    }
+
+    public function getTable(): string
+    {
+        return Schema::getConnection()->getDriverName() === 'pgsql'
+            ? 'auth.user_roles'
+            : 'user_roles';
     }
 
     public function user(): BelongsTo

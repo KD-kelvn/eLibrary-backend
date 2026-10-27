@@ -26,7 +26,13 @@ class UserRepository
     public function paginate(array $filters, int $perPage): LengthAwarePaginator
     {
         return User::query()
-            ->with(['profile', 'userRoles.role', 'userRoles.revokedRole'])
+            ->with([
+                'profile.faculty',
+                'profile.department',
+                'profile.programme',
+                'userRoles.role',
+                'userRoles.revokedRole',
+            ])
             ->when(filled($filters['search'] ?? null), function ($query) use ($filters) {
                 $search = $filters['search'];
                 $query->where(fn ($builder) => $builder
@@ -36,6 +42,7 @@ class UserRepository
                     ->orWhereHas('profile', fn ($profile) => $profile->where('fullname', 'like', "%{$search}%")));
             })
             ->when(isset($filters['is_blocked']), fn ($query) => $query->where('is_blocked', $filters['is_blocked']))
+            ->when(isset($filters['is_active']), fn ($query) => $query->where('is_active', $filters['is_active']))
             ->when(filled($filters['role_id'] ?? null), fn ($query) => $query->whereHas(
                 'activeUserRoles',
                 fn ($roles) => $roles->where('role_id', $filters['role_id']),
@@ -51,7 +58,9 @@ class UserRepository
     {
         return User::query()
             ->with([
-                'profile',
+                'profile.faculty',
+                'profile.department',
+                'profile.programme',
                 'userRoles' => fn ($query) => $query
                     ->with([
                         'role:id,name,code,status',

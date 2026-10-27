@@ -1,0 +1,24 @@
+{
+    "name": "modules/notifications",
+    "description": "In-app, email and SMS notification preferences, deliveries and APIs",
+    "type": "library",
+    "version": "1.0",
+    "license": "proprietary",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Modules\\Notifications\\": "src/",
+            "Modules\\Notifications\\Tests\\": "tests/",
+            "Modules\\Notifications\\Database\\Factories\\": "database/factories/",
+            "Modules\\Notifications\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "minimum-stability": "stable",
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Notifications\\Providers\\NotificationsServiceProvider"
+            ]
+        }
+    }
+}

@@ -78,7 +78,14 @@ class AccessContextService
                 $roleIds->isEmpty(),
                 fn (Builder $query) => $query->whereRaw('1 = 0'),
                 fn (Builder $query) => $query
-                    ->whereIn('role_id', $roleIds)
+                    ->where(function (Builder $access) use ($roleIds) {
+                        $access
+                            ->whereIn('role_id', $roleIds)
+                            ->orWhereHas(
+                                'roles',
+                                fn (Builder $rolesQuery) => $rolesQuery->whereKey($roleIds),
+                            );
+                    })
                     ->whereHas(
                         'userGrants',
                         fn (Builder $grants) => $grants->where('user_id', $user->id),

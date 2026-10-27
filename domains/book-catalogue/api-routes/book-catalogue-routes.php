@@ -13,7 +13,7 @@ use Modules\BookCatalogue\Http\Controllers\Reusables\ShelfController;
 use Modules\BookCatalogue\Http\Controllers\Reusables\SubCategoryController;
 use Modules\BookCatalogue\Http\Controllers\Reusables\TagController;
 
-Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class])->group(function () {
+Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class, 'permission'])->group(function () {
     Route::get('reusable-options', [ReusableOptionsController::class, 'index']);
 
     Route::get('favourites', [BookFavouriteController::class, 'index']);

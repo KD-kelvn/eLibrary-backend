@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use Illuminate\Support\Facades\Schema;
+
 /**
  * Qualify Postgres schema.table names for Laravel unique / exists rules.
  *
@@ -17,6 +19,10 @@ final class SchemaTable
     public static function forValidation(string $schemaTable): string
     {
         $connection = (string) config('database.default');
+
+        if (Schema::getConnection()->getDriverName() !== 'pgsql' && str_contains($schemaTable, '.')) {
+            $schemaTable = explode('.', $schemaTable, 2)[1];
+        }
 
         if ($schemaTable === '' || str_starts_with($schemaTable, $connection.'.')) {
             return $schemaTable;

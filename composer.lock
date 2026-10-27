@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ffc6d13e4a8af8260ae13272a0c0ede2",
+    "content-hash": "d37f7668f1c679c541ad1cbd8abb6c1b",
     "packages": [
         {
             "name": "brick/math",
@@ -3385,6 +3385,39 @@
             "time": "2026-04-14T12:32:34+00:00"
         },
         {
+            "name": "modules/academic",
+            "version": "1.0",
+            "dist": {
+                "type": "path",
+                "url": "domains/academic",
+                "reference": "1dafde600ea7dde7a7acff7eac237fc1fdbd4b33"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Modules\\Academic\\Providers\\AcademicServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Academic\\": "src/",
+                    "Modules\\Academic\\Tests\\": "tests/",
+                    "Modules\\Academic\\Database\\Factories\\": "database/factories/",
+                    "Modules\\Academic\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "Academic master data (faculties, departments, programmes, courses)",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "modules/authentication",
             "version": "1.0",
             "dist": {
@@ -3539,6 +3572,39 @@
             "license": [
                 "proprietary"
             ],
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "modules/notifications",
+            "version": "1.0",
+            "dist": {
+                "type": "path",
+                "url": "domains/notifications",
+                "reference": "e8b5cf9f30572123270fe10227cc75a9deddc493"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Modules\\Notifications\\Providers\\NotificationsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Notifications\\": "src/",
+                    "Modules\\Notifications\\Tests\\": "tests/",
+                    "Modules\\Notifications\\Database\\Factories\\": "database/factories/",
+                    "Modules\\Notifications\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "In-app, email and SMS notification preferences, deliveries and APIs",
             "transport-options": {
                 "symlink": true,
                 "relative": true

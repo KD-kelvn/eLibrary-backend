@@ -17,6 +17,10 @@ class StoreManagedUserRequest extends FormRequest
 
     public function rules(): array
     {
+        $faculties = SchemaTable::forValidation('academic.faculties');
+        $departments = SchemaTable::forValidation('academic.departments');
+        $programmes = SchemaTable::forValidation('academic.programmes');
+
         return [
             'username' => ['required', 'string', 'max:100', Rule::unique(SchemaTable::forValidation('auth.users'), 'username')],
             'email' => ['required', 'email', 'max:255', Rule::unique(SchemaTable::forValidation('auth.users'), 'email')],
@@ -28,6 +32,13 @@ class StoreManagedUserRequest extends FormRequest
             'role_id' => ['required', 'integer', 'exists:'.SchemaTable::forValidation('auth.roles').',id'],
             'expires_at' => ['nullable', 'date', 'after_or_equal:today'],
             'is_blocked' => ['nullable', 'boolean'],
+            'is_active' => ['nullable', 'boolean'],
+            'locale' => ['nullable', 'string', 'max:10', 'in:en,sw'],
+            'break_glass' => ['nullable', 'boolean'],
+            'faculty_id' => ['nullable', 'integer', 'exists:'.$faculties.',id'],
+            'department_id' => ['nullable', 'integer', 'exists:'.$departments.',id'],
+            'programme_id' => ['nullable', 'integer', 'exists:'.$programmes.',id'],
+            'year_of_study' => ['nullable', 'integer', 'min:1', 'max:10'],
         ];
     }
 }
