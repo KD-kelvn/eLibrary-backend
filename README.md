@@ -81,7 +81,10 @@ php artisan queue:work         # notifications/mail are queued
 php artisan schedule:work      # local scheduler (production: cron `* * * * * php artisan schedule:run`)
 ```
 
+Logging defaults to structured NDJSON (`LOG_STACK=daily_json` → `storage/logs/laravel.json.log`) with `service` / `env` extras and `X-Request-Id` / Context `request_id` (family-hub pattern). Plain `single` / `daily` remain available.
+
 Scheduled jobs (`routes/console.php`): health checks and heartbeats every minute, `activitylog:clean` and schedule-monitor prune daily, `borrowing:create-penalty-batches` at 00:00 and `borrowing:generate-daily-penalties` at 00:10 (output in `storage/logs/scheduler-YYYY-MM-DD.log`).
+
 
 ## Scripts
 
