@@ -19,14 +19,18 @@ class ProviderSettingsService
 
     public const SMS_DRIVER_INSTITUTIONAL = 'institutional';
 
-    /** @var list<string> */
+    /**
+     * @var list<string>
+     */
     public const SMS_DRIVERS = [
         self::SMS_DRIVER_LOG,
         self::SMS_DRIVER_BEEM,
         self::SMS_DRIVER_INSTITUTIONAL,
     ];
 
-    /** @var list<string> */
+    /**
+     * @var list<string>
+     */
     private const SMS_SECRET_KEYS = ['api_key', 'secret_key', 'api_secret'];
 
     /**
@@ -99,33 +103,26 @@ class ProviderSettingsService
     }
 
     /**
+     * Config (`services.sms.*`) already carries env defaults; stored provider_settings override.
+     *
      * @param  array<string, mixed>  $stored
      * @return array<string, mixed>
      */
     protected function mergeSmsDefaults(array $stored): array
     {
+        $beem = config('services.sms.beem');
+        $institutional = config('services.sms.institutional');
+
         return [
-            'driver' => (string) ($stored['driver'] ?? config('services.sms.driver', self::SMS_DRIVER_LOG)),
-            'beem' => array_merge([
-                'url' => (string) config('services.sms.beem.url', 'https://apisms.beem.africa/v1/send'),
-                'api_key' => (string) config('services.sms.beem.api_key', ''),
-                'secret_key' => (string) config('services.sms.beem.secret_key', ''),
-                'sender_id' => (string) config('services.sms.beem.sender_id', ''),
-                'balance_url' => (string) config('services.sms.beem.balance_url', 'https://apisms.beem.africa/public/v1/vendors/balance'),
-            ], is_array($stored['beem'] ?? null) ? $stored['beem'] : []),
-            'institutional' => array_merge([
-                'base_url' => (string) config('services.sms.institutional.base_url', ''),
-                'send_path' => (string) config('services.sms.institutional.send_path', '/sms/send'),
-                'health_url' => (string) config('services.sms.institutional.health_url', ''),
-                'api_key' => (string) config('services.sms.institutional.api_key', ''),
-                'api_secret' => (string) config('services.sms.institutional.api_secret', ''),
-                'api_key_header' => (string) config('services.sms.institutional.api_key_header', 'X-Api-Key'),
-                'auth_scheme' => (string) config('services.sms.institutional.auth_scheme', 'header'),
-                'sender_id' => (string) config('services.sms.institutional.sender_id', ''),
-                'to_field' => (string) config('services.sms.institutional.to_field', 'to'),
-                'message_field' => (string) config('services.sms.institutional.message_field', 'message'),
-                'sender_field' => (string) config('services.sms.institutional.sender_field', 'sender_id'),
-            ], is_array($stored['institutional'] ?? null) ? $stored['institutional'] : []),
+            'driver' => (string) ($stored['driver'] ?? config('services.sms.driver')),
+            'beem' => array_merge(
+                is_array($beem) ? $beem : [],
+                is_array($stored['beem'] ?? null) ? $stored['beem'] : [],
+            ),
+            'institutional' => array_merge(
+                is_array($institutional) ? $institutional : [],
+                is_array($stored['institutional'] ?? null) ? $stored['institutional'] : [],
+            ),
             'log' => [],
         ];
     }
