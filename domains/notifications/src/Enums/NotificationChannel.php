@@ -16,16 +16,19 @@ enum NotificationChannel: string
         return match ($this) {
             self::InApp => 'database',
             self::Email => 'mail',
-            self::Sms => 'log_sms',
+            self::Sms => 'sms',
         };
     }
 
+    /**
+     * Default provider label for delivery logs (SMS uses the active SmsProvider name at send time).
+     */
     public function provider(): string
     {
         return match ($this) {
             self::InApp => 'database',
             self::Email => 'smtp',
-            self::Sms => 'log_sms',
+            self::Sms => 'sms',
         };
     }
 
@@ -42,7 +45,7 @@ enum NotificationChannel: string
         return match ($driver) {
             'database' => self::InApp,
             'mail' => self::Email,
-            'log_sms', 'sms' => self::Sms,
+            'sms', 'log_sms' => self::Sms,
             default => null,
         };
     }

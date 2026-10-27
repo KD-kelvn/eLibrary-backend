@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Modules\Notifications\Health\SmsProviderCheck;
 use Spatie\Health\Checks\Checks\CacheCheck;
 use Spatie\Health\Checks\Checks\DatabaseCheck;
 use Spatie\Health\Checks\Checks\DatabaseConnectionCountCheck;
@@ -34,6 +35,7 @@ class AppServiceProvider extends ServiceProvider
                 ->failWhenUsedSpaceIsAbovePercentage(90),
             ScheduleCheck::new()->heartbeatMaxAgeInMinutes(5),
             QueueCheck::new()->failWhenHealthJobTakesLongerThanMinutes(5),
+            SmsProviderCheck::new()->name('SMS provider'),
         ];
 
         if ($this->app->isProduction()) {

@@ -134,8 +134,14 @@ class User extends Authenticatable
         return $this->morphMany(DatabaseNotification::class, 'notifiable')->latest();
     }
 
-    public function routeNotificationForLogSms(): ?string
+    public function routeNotificationForSms(): ?string
     {
         return $this->phone;
+    }
+
+    /** @deprecated Prefer routeNotificationForSms() */
+    public function routeNotificationForLogSms(): ?string
+    {
+        return $this->routeNotificationForSms();
     }
 }

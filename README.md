@@ -53,7 +53,7 @@ Other keys in `.env.example` that matter:
 | `FILESYSTEM_DISK` | Default disk. Ebooks always use the private `ebooks` disk (`storage/app/private`) |
 | `AWS_*` | Only if you move storage to S3 |
 
-SMS OTP currently goes to the log (`LogSmsChannel`); there is no SMS provider key yet (LP-N3).
+SMS uses `SmsProvider` (`log` | `beem` | `institutional`). Default is `log`. Configure via `SMS_DRIVER` / `BEEM_*` env or `PUT /api/settings/providers` (secrets write-only). Beem request shape matches family-hub.
 
 Then create the database and run:
 
