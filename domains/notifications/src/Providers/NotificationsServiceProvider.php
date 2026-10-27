@@ -8,9 +8,11 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
-use Modules\Authentication\Notifications\Channels\LogSmsChannel;
+use Modules\Notifications\Channels\SmsChannel;
+use Modules\Notifications\Contracts\SmsProvider;
 use Modules\Notifications\Listeners\LogNotificationDelivery;
 use Modules\Notifications\Models\DatabaseNotification;
+use Modules\Notifications\Sms\SmsProviderManager;
 
 class NotificationsServiceProvider extends ServiceProvider
 {
@@ -20,6 +22,9 @@ class NotificationsServiceProvider extends ServiceProvider
             \Illuminate\Notifications\DatabaseNotification::class,
             DatabaseNotification::class,
         );
+
+        $this->app->singleton(SmsProviderManager::class);
+        $this->app->bind(SmsProvider::class, fn ($app) => $app->make(SmsProviderManager::class)->driver());
     }
 
     public function boot(): void
@@ -27,7 +32,9 @@ class NotificationsServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
 
         Notification::resolved(function (ChannelManager $service): void {
-            $service->extend('log_sms', fn () => new LogSmsChannel);
+            $service->extend('sms', fn ($app) => $app->make(SmsChannel::class));
+            // Alias kept so older queued jobs / tests still resolve.
+            $service->extend('log_sms', fn ($app) => $app->make(SmsChannel::class));
         });
 
         Event::listen(

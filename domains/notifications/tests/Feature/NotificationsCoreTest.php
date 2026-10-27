@@ -45,6 +45,7 @@ class NotificationsCoreTest extends TestCase
             'roles',
             'users',
             'setting_values',
+            'provider_settings',
             'personal_access_tokens',
         ] as $table) {
             Schema::dropIfExists($table);
@@ -90,6 +91,7 @@ class NotificationsCoreTest extends TestCase
 
             return in_array('database', $drivers, true)
                 && in_array('mail', $drivers, true)
+                && ! in_array('sms', $drivers, true)
                 && ! in_array('log_sms', $drivers, true);
         });
     }
@@ -342,6 +344,14 @@ class NotificationsCoreTest extends TestCase
             $table->string('reason')->nullable();
             $table->timestamp('cancelled_at')->nullable();
             $table->foreignId('cancelled_by')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('provider_settings', function (Blueprint $table) {
+            $table->id();
+            $table->string('group', 64)->unique();
+            $table->text('config');
+            $table->foreignId('updated_by')->nullable();
             $table->timestamps();
         });
 

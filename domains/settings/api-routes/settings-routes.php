@@ -5,6 +5,7 @@ use Modules\Authentication\Http\Middleware\EnsureUserIsNotBlocked;
 use Modules\Settings\Http\Controllers\BrandingController;
 use Modules\Settings\Http\Controllers\LibrarySettingsController;
 use Modules\Settings\Http\Controllers\LoginSlideController;
+use Modules\Settings\Http\Controllers\ProviderSettingsController;
 
 Route::get('branding', [BrandingController::class, 'show']);
 Route::get('login-slides', [LoginSlideController::class, 'index']);
@@ -23,4 +24,7 @@ Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class, 'permission'])
     Route::post('library/reset', [LibrarySettingsController::class, 'reset']);
     Route::delete('library/pending/{id}', [LibrarySettingsController::class, 'cancelPending']);
     Route::get('library/history', [LibrarySettingsController::class, 'history']);
+
+    Route::get('providers', [ProviderSettingsController::class, 'show']);
+    Route::put('providers', [ProviderSettingsController::class, 'update']);
 });

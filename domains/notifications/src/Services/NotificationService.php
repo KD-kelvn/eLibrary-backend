@@ -11,6 +11,7 @@ use Modules\Notifications\Models\DatabaseNotification;
 use Modules\Notifications\Models\NotificationDelivery;
 use Modules\Notifications\Models\NotificationPreference;
 use Modules\Notifications\Notifications\LibraryAlertNotification;
+use Modules\Notifications\Sms\SmsProviderManager;
 use Modules\Settings\Services\SettingsService;
 
 class NotificationService
@@ -37,6 +38,34 @@ class NotificationService
             return [];
         }
 
+        $quietHours = app(QuietHoursGuard::class);
+        $smsProvider = app(SmsProviderManager::class)->activeName();
+
+        // Mark SMS as skipped during quiet hours (OTP bypasses this path entirely).
+        if ($quietHours->isQuiet()) {
+            foreach ($resolved as $index => $channel) {
+                if ($channel !== NotificationChannel::Sms) {
+                    continue;
+                }
+                NotificationDelivery::query()->create([
+                    'notification_id' => null,
+                    'user_id' => $user->id,
+                    'category' => $category->value,
+                    'channel' => $channel->value,
+                    'provider' => $smsProvider,
+                    'status' => 'skipped',
+                    'attempts' => 0,
+                    'error' => 'skipped_quiet_hours',
+                ]);
+                unset($resolved[$index]);
+            }
+            $resolved = array_values($resolved);
+        }
+
+        if ($resolved === []) {
+            return [];
+        }
+
         $notification = new LibraryAlertNotification($category, $title, $body, $data, $resolved);
 
         $deliveries = [];
@@ -46,7 +75,7 @@ class NotificationService
                 'user_id' => $user->id,
                 'category' => $category->value,
                 'channel' => $channel->value,
-                'provider' => $channel->provider(),
+                'provider' => $channel === NotificationChannel::Sms ? $smsProvider : $channel->provider(),
                 'status' => 'queued',
                 'attempts' => 0,
             ]);

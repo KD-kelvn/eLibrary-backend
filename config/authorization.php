@@ -109,6 +109,10 @@ return [
         'DELETE api/settings/library/pending/{id}' => ['settings.library.update'],
         'POST api/settings/library/reset' => ['settings.library.reset'],
 
+        // Provider credentials (secrets write-only)
+        'GET api/settings/providers' => ['settings.providers'],
+        'PUT api/settings/providers' => ['settings.providers'],
+
         // Branding (mutate only — GET is public)
         'POST api/settings/branding' => ['branding.manage', 'appearance.update'],
         'GET api/settings/login-slides/manage' => ['branding.manage', 'login-slides.create', 'login-slides.update'],
