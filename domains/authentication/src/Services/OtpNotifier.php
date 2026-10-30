@@ -14,11 +14,12 @@ class OtpNotifier
         string $code,
         OneTimeTokenVia $via,
         OneTimeTokenPurpose $purpose = OneTimeTokenPurpose::Login,
+        ?int $expiryMinutes = null,
     ): void {
         $user->notify(new OneTimePasswordNotification(
             code: $code,
             via: $via,
-            expiryMinutes: (int) config('authentication.otp.expiry_minutes', 10),
+            expiryMinutes: $expiryMinutes ?? (int) config('authentication.otp.expiry_minutes', 10),
             purpose: $purpose,
         ));
     }

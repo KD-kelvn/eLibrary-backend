@@ -10,11 +10,13 @@ class OtpSentResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        return [
-            'via' => $this->resource['via'],
-            'purpose' => $this->resource['purpose'],
-            'expires_at' => $this->resource['expires_at'],
+        return array_filter([
+            'challenge_id' => $this->resource['challenge_id'] ?? null,
+            'channel' => $this->resource['channel'] ?? null,
+            'via' => $this->resource['via'] ?? null,
+            'purpose' => $this->resource['purpose'] ?? null,
+            'expires_at' => $this->resource['expires_at'] ?? null,
             'code' => $this->resource['code'] ?? null,
-        ];
+        ], fn ($value) => $value !== null);
     }
 }

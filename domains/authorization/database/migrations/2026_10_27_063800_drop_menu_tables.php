@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /** Nav is frontend-owned. Drop DB menu tables and the unused system_actions.menu_item_id FK. */
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (Schema::hasColumn('auth.system_actions', 'menu_item_id')) {
