@@ -3,8 +3,6 @@
 namespace Modules\Authentication\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
-use Modules\Authentication\Enums\OneTimeTokenPurpose;
 
 class VerifyOtpRequest extends FormRequest
 {
@@ -17,9 +15,10 @@ class VerifyOtpRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'identifier' => ['required', 'string', 'max:255'],
-            'token' => ['required', 'string', 'min:4', 'max:10'],
-            'purpose' => ['sometimes', Rule::enum(OneTimeTokenPurpose::class)],
+            'challenge_id' => ['required_without:identifier', 'nullable', 'uuid'],
+            'code' => ['required_without:token', 'nullable', 'string', 'min:4', 'max:10'],
+            'token' => ['required_without:code', 'nullable', 'string', 'min:4', 'max:10'],
+            'identifier' => ['required_without:challenge_id', 'nullable', 'string', 'max:255'],
             'device_name' => ['nullable', 'string', 'max:100'],
         ];
     }

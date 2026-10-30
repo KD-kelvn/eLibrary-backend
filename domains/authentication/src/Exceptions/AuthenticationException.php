@@ -51,6 +51,16 @@ class AuthenticationException extends RuntimeException
         return new self('This account is temporarily locked. Try again later.', 403);
     }
 
+    public static function tooManyAttempts(): self
+    {
+        return new self('Too many attempts. Try again later.', 429);
+    }
+
+    public static function challengeNotFound(): self
+    {
+        return new self('The sign-in challenge is invalid or has expired.', 422);
+    }
+
     public static function unprocessable(string $message): self
     {
         return new self($message, 422);

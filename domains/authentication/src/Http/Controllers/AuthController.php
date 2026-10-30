@@ -10,6 +10,7 @@ use Modules\Authentication\Exceptions\AuthenticationException;
 use Modules\Authentication\Http\Controllers\Concerns\RespondsWithJson;
 use Modules\Authentication\Http\Requests\ForgotPasswordRequest;
 use Modules\Authentication\Http\Requests\LoginRequest;
+use Modules\Authentication\Http\Requests\OtpOptionsRequest;
 use Modules\Authentication\Http\Requests\RegisterRequest;
 use Modules\Authentication\Http\Requests\RequestOtpRequest;
 use Modules\Authentication\Http\Requests\ResetPasswordRequest;
@@ -17,6 +18,7 @@ use Modules\Authentication\Http\Requests\VerifyOtpRequest;
 use Modules\Authentication\Http\Requests\VerifyPasswordResetOtpRequest;
 use Modules\Authentication\Http\Resources\AuthenticatedUserResource;
 use Modules\Authentication\Http\Resources\AuthResource;
+use Modules\Authentication\Http\Resources\OtpOptionsResource;
 use Modules\Authentication\Http\Resources\OtpSentResource;
 use Modules\Authentication\Services\OneTimeTokenLoginService;
 use Modules\Authentication\Services\PasswordLoginService;
@@ -60,18 +62,47 @@ class AuthController extends Controller
         }
     }
 
+    public function otpOptions(OtpOptionsRequest $request): JsonResponse
+    {
+        try {
+            $result = $this->otpLogin->options(
+                $request->validated('identifier'),
+                $request->ip(),
+            );
+
+            return $this->successResponse(
+                OtpOptionsResource::make($result),
+                OneTimeTokenLoginService::GENERIC_CONTINUE,
+            );
+        } catch (AuthenticationException $e) {
+            return $this->failResponse(null, $e->getMessage(), $e->getCode() ?: 422);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
     public function requestOtp(RequestOtpRequest $request): JsonResponse
     {
         try {
             $payload = $request->validated();
-            // Password-reset codes must use the dedicated /password/forgot endpoint.
-            $payload['purpose'] = OneTimeTokenPurpose::Login->value;
             $payload['ip_address'] = $request->ip();
             $payload['user_agent'] = $request->userAgent();
 
+            if (! empty($payload['challenge_id'])) {
+                $result = $this->otpLogin->requestForChallenge($payload);
+                $result['challenge_id'] = $payload['challenge_id'];
+
+                return $this->successResponse(
+                    OtpSentResource::make($result),
+                    OneTimeTokenLoginService::GENERIC_SENT,
+                );
+            }
+
+            // Legacy identifier+via path (password-reset clients / transitional).
+            $payload['purpose'] = OneTimeTokenPurpose::Login->value;
             $result = $this->otpLogin->requestToken($payload);
 
-            return $this->successResponse(OtpSentResource::make($result), 'One-time code sent.');
+            return $this->successResponse(OtpSentResource::make($result), OneTimeTokenLoginService::GENERIC_SENT);
         } catch (AuthenticationException $e) {
             return $this->failResponse(null, $e->getMessage(), $e->getCode() ?: 422);
         } catch (\Exception $e) {
@@ -83,14 +114,20 @@ class AuthController extends Controller
     {
         try {
             $payload = $request->validated();
-            // Login OTP verification must never accept password-reset tokens.
             $payload['purpose'] = OneTimeTokenPurpose::Login->value;
 
-            $result = $this->otpLogin->login($payload);
+            $result = ! empty($payload['challenge_id'])
+                ? $this->otpLogin->verifyForChallenge($payload)
+                : $this->otpLogin->login($payload);
 
             return $this->successResponse(AuthResource::make($result), 'Signed in successfully.');
         } catch (AuthenticationException $e) {
-            return $this->failResponse(null, $e->getMessage(), $e->getCode() ?: 401);
+            $status = $e->getCode() ?: 401;
+            $message = in_array($status, [401, 422], true)
+                ? OneTimeTokenLoginService::GENERIC_INVALID
+                : $e->getMessage();
+
+            return $this->failResponse(null, $message, $status);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }

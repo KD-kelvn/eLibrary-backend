@@ -7,9 +7,11 @@ use Modules\Authentication\Http\Controllers\UserManagementController;
 use Modules\Authentication\Http\Middleware\EnsureUserIsNotBlocked;
 
 Route::prefix('auth')->group(function () {
-    Route::middleware('throttle:5,1')->group(function () {
+    Route::middleware('throttle:30,1')->group(function () {
         Route::post('register', [AuthController::class, 'register']);
         Route::post('login', [AuthController::class, 'login']);
+        // Product rate limits (FR-AUTH-04) are enforced in OtpRateLimiter; keep a coarse HTTP cap.
+        Route::post('otp/options', [AuthController::class, 'otpOptions']);
         Route::post('otp/request', [AuthController::class, 'requestOtp']);
         Route::post('otp/verify', [AuthController::class, 'verifyOtp']);
         Route::post('password/forgot', [AuthController::class, 'forgotPassword']);

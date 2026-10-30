@@ -40,4 +40,16 @@ trait ManagesOneTimeTokens
     {
         $token->update(['used_at' => now()]);
     }
+
+    /** @return Collection<int, OneTimeToken> */
+    public function activeForChallenge(string $challengeId, OneTimeTokenPurpose $purpose): Collection
+    {
+        return OneTimeToken::query()
+            ->where('challenge_id', $challengeId)
+            ->where('purpose', $purpose->value)
+            ->whereNull('used_at')
+            ->where('expires_at', '>', now())
+            ->latest('id')
+            ->get();
+    }
 }
