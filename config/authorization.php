@@ -206,14 +206,10 @@ return [
      * @var list<string>
      */
     'public_routes' => [
-        'POST api/auth/login',
-        'POST api/auth/register',
         'POST api/auth/otp/options',
         'POST api/auth/otp/request',
         'POST api/auth/otp/verify',
-        'POST api/auth/password/forgot',
-        'POST api/auth/password/verify-otp',
-        'POST api/auth/password/reset',
+        'POST api/auth/break-glass',
         'GET api/settings/branding',
         'GET api/settings/login-slides',
         'GET api/settings/library/public',
