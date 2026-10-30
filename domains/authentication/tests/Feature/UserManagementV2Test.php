@@ -70,7 +70,9 @@ class UserManagementV2Test extends TestCase
             'phone' => '0712345678',
             'password' => 'Password1!',
             'password_confirmation' => 'Password1!',
-            'fullname' => 'Asha Mwinyi',
+            'first_name' => 'Asha',
+            'middle_name' => null,
+            'last_name' => 'Mwinyi',
             'role_id' => $studentRole->id,
             'faculty_id' => $faculty->id,
             'department_id' => $department->id,
@@ -81,6 +83,9 @@ class UserManagementV2Test extends TestCase
         $create->assertCreated();
         $userId = $create->json('data.id');
         $this->assertSame('+255712345678', $create->json('data.phone'));
+        $this->assertSame('Asha', $create->json('data.profile.firstName'));
+        $this->assertSame('Mwinyi', $create->json('data.profile.lastName'));
+        $this->assertSame('Asha Mwinyi', $create->json('data.profile.fullname'));
         $this->assertSame($faculty->id, $create->json('data.profile.facultyId'));
         $this->assertSame(2, $create->json('data.profile.yearOfStudy'));
         $this->assertSame('manual', $create->json('data.profile.source'));
@@ -159,6 +164,33 @@ class UserManagementV2Test extends TestCase
             'is_active' => 0,
             'deactivated_reason' => 'Graduated',
         ]);
+    }
+
+    public function test_year_of_study_rejected_for_non_member_role(): void
+    {
+        [$admin, $studentRole] = $this->seedAdminWithUsersManage();
+        $facultyRole = Role::query()->create([
+            'name' => 'Faculty',
+            'code' => 'faculty',
+            'status' => 'active',
+            'is_system' => true,
+        ]);
+
+        Sanctum::actingAs($admin);
+
+        $this->postJson('/api/auth/users', [
+            'username' => 'FAC001',
+            'email' => 'faculty@example.com',
+            'password' => 'Password1!',
+            'password_confirmation' => 'Password1!',
+            'first_name' => 'Jamal',
+            'last_name' => 'Kariuki',
+            'role_id' => $facultyRole->id,
+            'year_of_study' => 3,
+        ])->assertStatus(422)
+            ->assertJsonValidationErrors(['year_of_study']);
+
+        $this->assertNotNull($studentRole);
     }
 
     public function test_last_admin_cannot_be_deactivated(): void
@@ -298,6 +330,9 @@ class UserManagementV2Test extends TestCase
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('fullname');
+            $table->string('first_name')->nullable();
+            $table->string('middle_name')->nullable();
+            $table->string('last_name')->nullable();
             $table->string('gender')->nullable();
             $table->date('dob')->nullable();
             $table->string('profile_picture')->nullable();

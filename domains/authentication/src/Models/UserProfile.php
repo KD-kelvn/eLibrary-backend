@@ -14,6 +14,9 @@ class UserProfile extends BaseModelWithAudits
     protected $fillable = [
         'user_id',
         'fullname',
+        'first_name',
+        'middle_name',
+        'last_name',
         'gender',
         'dob',
         'profile_picture',
@@ -26,6 +29,24 @@ class UserProfile extends BaseModelWithAudits
         'source',
         'core_synced_at',
     ];
+
+    /**
+     * Display / search name derived from parts when present.
+     */
+    public function composedFullname(): string
+    {
+        $parts = array_filter([
+            $this->first_name,
+            $this->middle_name,
+            $this->last_name,
+        ], fn ($part) => filled($part));
+
+        if ($parts !== []) {
+            return implode(' ', $parts);
+        }
+
+        return (string) ($this->fullname ?? '');
+    }
 
     protected function casts(): array
     {

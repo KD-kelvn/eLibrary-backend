@@ -15,7 +15,10 @@ class UserProfileResource extends JsonResource
         $photoPath = $this->photo_path ?: $this->profile_picture;
 
         return [
-            'fullname' => $this->fullname,
+            'fullname' => $this->composedFullname(),
+            'firstName' => $this->first_name,
+            'middleName' => $this->middle_name,
+            'lastName' => $this->last_name,
             'gender' => $this->gender,
             'dob' => $this->dob?->format('Y-m-d'),
             'profile_picture' => $photoPath,

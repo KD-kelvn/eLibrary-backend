@@ -14,7 +14,6 @@ use Modules\Authentication\Repositories\UserProfileRepository;
 use Modules\Authentication\Repositories\UserRepository;
 use Modules\Authentication\Support\PhoneNumberNormalizer;
 use Modules\Authorization\Enums\RoleStatusEnum;
-use Modules\Authorization\Exceptions\AuthorizationException;
 use Modules\Authorization\Models\Role;
 use Modules\Authorization\Models\UserRole;
 use Modules\Authorization\Services\LastAdminGuard;
@@ -59,7 +58,7 @@ class UserManagementService
 
         $data = $this->normalizeCredentialPayload($data);
         $this->assertUniqueCredentials($data);
-        $profileData = $this->extractProfilePayload($data);
+        $profileData = $this->extractProfilePayload($data, createRole: $role);
 
         return DB::transaction(function () use ($data, $assignedBy, $role, $profileData) {
             $user = $this->users->create([
@@ -122,7 +121,7 @@ class UserManagementService
                 'locked_until',
             ])->all();
 
-            $profileData = $this->extractProfilePayload($data);
+            $profileData = $this->extractProfilePayload($data, existing: $user);
 
             if (($data['is_active'] ?? null) === false || ($data['is_blocked'] ?? false) === true) {
                 $this->lastAdmin->assertCanBlockOrDeactivate($user);
@@ -240,18 +239,6 @@ class UserManagementService
     }
 
     /**
-     * Hard delete removed (FR-USR-05). Kept to fail loudly if called.
-     */
-    public function destroy(int $id): void
-    {
-        throw new AuthorizationException(
-            'Users cannot be deleted. Deactivate the account instead.',
-            405,
-            'USER_DELETE_REMOVED',
-        );
-    }
-
-    /**
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
@@ -259,6 +246,12 @@ class UserManagementService
     {
         if (array_key_exists('phone', $data)) {
             $data['phone'] = $this->phones->normalize($data['phone'] ?? null);
+
+            if ($data['phone'] !== null && ! $this->phones->isE164($data['phone'])) {
+                throw AuthenticationException::unprocessable(
+                    'The phone must be a valid phone number (E.164).',
+                );
+            }
         }
 
         if (array_key_exists('email', $data) && is_string($data['email'])) {
@@ -276,9 +269,20 @@ class UserManagementService
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
-    private function extractProfilePayload(array $data): array
+    private function extractProfilePayload(array $data, ?Role $createRole = null, ?User $existing = null): array
     {
-        $keys = ['fullname', 'gender', 'dob', 'faculty_id', 'department_id', 'programme_id', 'year_of_study'];
+        $keys = [
+            'first_name',
+            'middle_name',
+            'last_name',
+            'fullname',
+            'gender',
+            'dob',
+            'faculty_id',
+            'department_id',
+            'programme_id',
+            'year_of_study',
+        ];
         $profile = [];
 
         foreach ($keys as $key) {
@@ -291,7 +295,59 @@ class UserManagementService
             return [];
         }
 
+        $profile = $this->syncFullnameFromParts($profile);
+        $profile = $this->constrainYearOfStudy($profile, $createRole, $existing);
+
         return $this->assertAcademicHierarchy($profile);
+    }
+
+    /**
+     * @param  array<string, mixed>  $profile
+     * @return array<string, mixed>
+     */
+    private function syncFullnameFromParts(array $profile): array
+    {
+        $hasParts = array_key_exists('first_name', $profile)
+            || array_key_exists('middle_name', $profile)
+            || array_key_exists('last_name', $profile);
+
+        if (! $hasParts) {
+            return $profile;
+        }
+
+        $parts = array_filter([
+            $profile['first_name'] ?? null,
+            $profile['middle_name'] ?? null,
+            $profile['last_name'] ?? null,
+        ], fn ($part) => filled($part));
+
+        if ($parts !== []) {
+            $profile['fullname'] = implode(' ', $parts);
+        }
+
+        return $profile;
+    }
+
+    /**
+     * Year of study is Member-only (student role).
+     *
+     * @param  array<string, mixed>  $profile
+     * @return array<string, mixed>
+     */
+    private function constrainYearOfStudy(array $profile, ?Role $createRole, ?User $existing): array
+    {
+        if (! array_key_exists('year_of_study', $profile)) {
+            return $profile;
+        }
+
+        $isStudent = $createRole?->code === 'student'
+            || ($existing?->hasActiveRole('student') ?? false);
+
+        if (! $isStudent) {
+            $profile['year_of_study'] = null;
+        }
+
+        return $profile;
     }
 
     /**

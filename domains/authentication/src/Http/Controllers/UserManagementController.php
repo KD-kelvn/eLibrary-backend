@@ -121,14 +121,4 @@ class UserManagementController extends Controller
             return $this->failResponse(null, $exception->getMessage(), $exception->getCode() ?: 422);
         }
     }
-
-    public function destroy(string $user): JsonResponse
-    {
-        // FR-USR-05 / TC-USR-04: hard delete removed.
-        return $this->failResponse(
-            null,
-            'Users cannot be deleted. Deactivate the account instead.',
-            405,
-        );
-    }
 }
