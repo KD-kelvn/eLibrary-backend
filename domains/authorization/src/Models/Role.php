@@ -60,16 +60,6 @@ class Role extends BaseModelWithAudits
         );
     }
 
-    public function menus(): BelongsToMany
-    {
-        return $this->belongsToMany(Menu::class, 'auth.menu_roles', 'role_id', 'menu_id');
-    }
-
-    public function menuItems(): BelongsToMany
-    {
-        return $this->belongsToMany(MenuItem::class, 'auth.menu_item_roles', 'role_id', 'menu_item_id');
-    }
-
     public function ownedSystemActions(): HasMany
     {
         return $this->hasMany(SystemAction::class, 'role_id');

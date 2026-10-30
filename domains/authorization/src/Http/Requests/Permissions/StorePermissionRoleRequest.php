@@ -14,14 +14,8 @@ class StorePermissionRoleRequest extends FormRequest
 
     public function rules(): array
     {
-        $resourceRule = match (true) {
-            $this->routeIs('*menu-item-roles*') => ['menu_item_id' => ['required', 'integer', 'exists:'.SchemaTable::forValidation('auth.menu_items').',id']],
-            $this->routeIs('*system-action-roles*') => ['system_action_id' => ['required', 'integer', 'exists:'.SchemaTable::forValidation('auth.system_actions').',id']],
-            default => ['menu_id' => ['required', 'integer', 'exists:'.SchemaTable::forValidation('auth.menus').',id']],
-        };
-
         return [
-            ...$resourceRule,
+            'system_action_id' => ['required', 'integer', 'exists:'.SchemaTable::forValidation('auth.system_actions').',id'],
             'role_id' => ['required', 'integer', 'exists:'.SchemaTable::forValidation('auth.roles').',id'],
         ];
     }

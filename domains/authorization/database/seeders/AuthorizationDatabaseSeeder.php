@@ -14,7 +14,6 @@ class AuthorizationDatabaseSeeder extends Seeder
             AdminPermissionSeeder::class,
             LibrarianPermissionSeeder::class,
             SystemModuleSeeder::class,
-            MenuWorkspaceSeeder::class,
         ]);
     }
 }

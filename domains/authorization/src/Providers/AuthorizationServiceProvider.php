@@ -6,8 +6,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Modules\Authorization\Console\Commands\SyncUserActionGrantsCommand;
-use Modules\Authorization\Models\Menu;
-use Modules\Authorization\Models\MenuItem;
 use Modules\Authorization\Models\RevokedRole;
 use Modules\Authorization\Models\Role;
 use Modules\Authorization\Models\SystemAction;
@@ -16,8 +14,6 @@ use Modules\Authorization\Models\SystemModuleRole;
 use Modules\Authorization\Models\SystemPage;
 use Modules\Authorization\Models\SystemPageRole;
 use Modules\Authorization\Models\UserRole;
-use Modules\Authorization\Policies\MenuItemPolicy;
-use Modules\Authorization\Policies\MenuPolicy;
 use Modules\Authorization\Policies\RevokedRolePolicy;
 use Modules\Authorization\Policies\RolePolicy;
 use Modules\Authorization\Policies\SystemActionPolicy;
@@ -55,8 +51,6 @@ class AuthorizationServiceProvider extends ServiceProvider
         Gate::policy(SystemPage::class, SystemPagePolicy::class);
         Gate::policy(SystemModuleRole::class, SystemModuleRolePolicy::class);
         Gate::policy(SystemPageRole::class, SystemPageRolePolicy::class);
-        Gate::policy(Menu::class, MenuPolicy::class);
-        Gate::policy(MenuItem::class, MenuItemPolicy::class);
         Gate::policy(SystemAction::class, SystemActionPolicy::class);
     }
 }

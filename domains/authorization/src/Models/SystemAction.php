@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Schema;
 class SystemAction extends BaseModelWithAudits
 {
     protected $fillable = [
-        'menu_item_id',
         'role_id',
         'name',
         'description',
@@ -30,11 +29,6 @@ class SystemAction extends BaseModelWithAudits
         return Schema::getConnection()->getDriverName() === 'pgsql'
             ? 'auth.system_actions'
             : 'system_actions';
-    }
-
-    public function menuItem(): BelongsTo
-    {
-        return $this->belongsTo(MenuItem::class, 'menu_item_id');
     }
 
     public function role(): BelongsTo

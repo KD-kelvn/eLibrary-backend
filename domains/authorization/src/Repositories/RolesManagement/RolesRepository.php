@@ -39,7 +39,7 @@ class RolesRepository
     {
         return $this->model->newQuery()
             ->with([
-                'ownedSystemActions:id,role_id,name,code,action_type,is_active,menu_item_id',
+                'ownedSystemActions:id,role_id,name,code,action_type,is_active',
                 'userRoles' => fn ($query) => $query->with([
                     'user.profile',
                     'assignedBy.profile',
