@@ -5,11 +5,13 @@ namespace Modules\Authentication\Services;
 use App\Support\AdminActivity;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Modules\Authentication\Enums\OneTimeTokenPurpose;
 use Modules\Authentication\Enums\OneTimeTokenVia;
 use Modules\Authentication\Exceptions\AuthenticationException;
 use Modules\Authentication\Models\OneTimeToken;
 use Modules\Authentication\Models\User;
+use Modules\Authentication\Notifications\BreakGlassUsedNotification;
 use Modules\Authentication\Repositories\OneTimeTokenRepository;
 use Modules\Authentication\Repositories\UserRepository;
 use Modules\Authentication\Services\Concerns\GuardsAccountAccess;
@@ -166,9 +168,51 @@ class OneTimeTokenLoginService
 
         $this->tokens->markAsUsed($token);
         $this->clearFailedAttempts($user);
+
+        $isBreakGlass = (bool) ($challenge['break_glass'] ?? false);
         $this->challenges->forget($challenge['id']);
 
-        return $this->issueToken($user->load('profile'), $data['device_name'] ?? null);
+        $result = $this->issueToken($user->load('profile'), $data['device_name'] ?? null);
+
+        if ($isBreakGlass) {
+            $this->recordBreakGlassSuccess($user);
+        }
+
+        return $result;
+    }
+
+    private function recordBreakGlassSuccess(User $user): void
+    {
+        $occurredAt = now()->toIso8601String();
+
+        AdminActivity::log(
+            'Break-glass sign-in completed',
+            $user,
+            [
+                'username' => $user->username,
+                'occurred_at' => $occurredAt,
+            ],
+            logName: 'auth',
+            event: 'auth.break_glass',
+        );
+
+        $admins = User::query()
+            ->whereKeyNot($user->id)
+            ->whereHas(
+                'activeUserRoles',
+                fn ($query) => $query->whereHas(
+                    'role',
+                    fn ($role) => $role->where('code', 'admin')->where('status', 'active'),
+                ),
+            )
+            ->get();
+
+        if ($admins->isNotEmpty()) {
+            Notification::send(
+                $admins,
+                new BreakGlassUsedNotification($user, $occurredAt),
+            );
+        }
     }
 
     /**

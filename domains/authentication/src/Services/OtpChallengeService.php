@@ -5,6 +5,7 @@ namespace Modules\Authentication\Services;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Modules\Authentication\Enums\OneTimeTokenVia;
+use Modules\Authentication\Exceptions\AuthenticationException;
 use Modules\Authentication\Models\User;
 use Modules\Authentication\Support\ChannelMasker;
 
@@ -16,6 +17,7 @@ use Modules\Authentication\Support\ChannelMasker;
  *     identifier: string,
  *     user_id: int|null,
  *     eligible: bool,
+ *     break_glass: bool,
  *     channels: list<string>,
  *     ip: string|null,
  *     created_at: string
@@ -47,6 +49,45 @@ class OtpChallengeService
             'identifier' => $this->identifiers->normalize($identifier),
             'user_id' => $eligible ? $user->id : null,
             'eligible' => $eligible && $channels !== [],
+            'break_glass' => false,
+            'channels' => $channels,
+            'ip' => $ip,
+            'created_at' => now()->toIso8601String(),
+        ];
+
+        Cache::put(self::CACHE_PREFIX.$id, $payload, now()->addMinutes(self::TTL_MINUTES));
+
+        return [
+            'challenge_id' => $id,
+            'channels' => $this->maskedChannels($user, $channels),
+        ];
+    }
+
+    /**
+     * FR-AUTH-06: challenge after successful break-glass password check.
+     *
+     * @return array{challenge_id: string, channels: list<array{type: string, masked: string}>}
+     */
+    public function createBreakGlassForUser(User $user, ?string $ip = null): array
+    {
+        $channels = $this->availableChannels($user);
+        if ($channels === []) {
+            throw AuthenticationException::unprocessable(
+                'No OTP delivery channel is available for this account.',
+            );
+        }
+
+        $id = (string) Str::uuid();
+        $identifier = filled($user->username)
+            ? (string) $user->username
+            : (string) ($user->email ?? $user->phone);
+
+        $payload = [
+            'id' => $id,
+            'identifier' => $this->identifiers->normalize($identifier),
+            'user_id' => $user->id,
+            'eligible' => true,
+            'break_glass' => true,
             'channels' => $channels,
             'ip' => $ip,
             'created_at' => now()->toIso8601String(),
