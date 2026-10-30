@@ -17,7 +17,6 @@ class IndexSystemActionRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string', 'max:255'],
-            'menu_item_id' => ['nullable', 'integer', 'exists:'.SchemaTable::forValidation('auth.menu_items').',id'],
             'role_id' => ['nullable', 'integer', 'exists:'.SchemaTable::forValidation('auth.roles').',id'],
             'is_active' => ['nullable', 'boolean'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],

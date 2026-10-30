@@ -36,7 +36,6 @@ class MatrixPermissionSeeder extends Seeder
                     'role_id' => $owner->id,
                     'action_type' => 'permission',
                     'is_active' => true,
-                    'menu_item_id' => null,
                 ],
             );
 

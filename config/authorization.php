@@ -7,7 +7,7 @@
  * Values: list of action codes (any-of). Empty list = auth-only (no action grant).
  *
  * Prefer matrix codes from design/docs/v1/03-roles-permissions.md; legacy
- * seeder codes remain as alternatives until menus are remapped.
+ * seeder codes remain as alternatives where still in use.
  */
 return [
     'route_permissions' => [
@@ -17,14 +17,12 @@ return [
         'GET api/auth/sessions' => ['sessions.view_own', 'sessions.view'],
         'DELETE api/auth/sessions/others' => ['sessions.revoke_own', 'sessions.revoke'],
         'DELETE api/auth/sessions/{personalAccessToken}' => ['sessions.revoke_own', 'sessions.revoke'],
-
         // Admin sessions
         'GET api/auth/admin/sessions' => ['sessions.manage', 'sessions.view'],
         'GET api/auth/admin/sessions/summary' => ['sessions.manage', 'sessions.view'],
         'DELETE api/auth/admin/sessions/{personalAccessToken}' => ['sessions.manage', 'sessions.revoke'],
         'DELETE api/auth/admin/sessions/by-user/{user}' => ['sessions.manage', 'sessions.revoke'],
         'GET api/auth/admin-dashboard' => ['roles.manage', 'users.manage', 'users.create'],
-
         // Users
         'GET api/auth/users' => ['users.manage', 'users.create', 'users.update'],
         'POST api/auth/users' => ['users.manage', 'users.create'],
@@ -36,7 +34,6 @@ return [
         'POST api/auth/users/{user}/photo' => ['users.manage', 'users.update'],
         'GET api/auth/users/{user}/system-actions' => ['permissions.assign', 'actions.update'],
         'PUT api/auth/users/{user}/system-actions' => ['permissions.assign', 'actions.update'],
-
         // Roles
         'GET api/auth/roles' => ['roles.manage', 'roles.create', 'roles.update'],
         'POST api/auth/roles' => ['roles.manage', 'roles.create'],
@@ -44,7 +41,6 @@ return [
         'PUT api/auth/roles/{role}' => ['roles.manage', 'roles.update'],
         'PATCH api/auth/roles/{role}' => ['roles.manage', 'roles.update'],
         'DELETE api/auth/roles/{role}' => ['roles.manage', 'roles.delete'],
-
         // Role assignments / revocations
         'GET api/auth/role-assignments' => ['roles.manage', 'role-assignments.create', 'role-assignments.update'],
         'POST api/auth/role-assignments' => ['roles.manage', 'role-assignments.create'],
@@ -55,24 +51,6 @@ return [
         'GET api/auth/role-revocations' => ['roles.manage', 'role-assignments.revoke'],
         'POST api/auth/role-revocations' => ['roles.manage', 'role-assignments.revoke'],
         'GET api/auth/role-revocations/{role_revocation}' => ['roles.manage', 'role-assignments.revoke'],
-
-        // Menus / actions / modules
-        'GET api/auth/menus' => ['roles.manage', 'menus.create', 'menus.update'],
-        'POST api/auth/menus' => ['roles.manage', 'menus.create'],
-        'GET api/auth/menus/{menu}' => ['roles.manage', 'menus.update'],
-        'PUT api/auth/menus/{menu}' => ['roles.manage', 'menus.update'],
-        'PATCH api/auth/menus/{menu}' => ['roles.manage', 'menus.update'],
-        'DELETE api/auth/menus/{menu}' => ['roles.manage', 'menus.delete'],
-        'POST api/auth/menu-items' => ['roles.manage', 'menus.create'],
-        'GET api/auth/menu-items/{menu_item}' => ['roles.manage', 'menus.update'],
-        'PUT api/auth/menu-items/{menu_item}' => ['roles.manage', 'menus.update'],
-        'PATCH api/auth/menu-items/{menu_item}' => ['roles.manage', 'menus.update'],
-        'DELETE api/auth/menu-items/{menu_item}' => ['roles.manage', 'menus.delete'],
-        'POST api/auth/menu-roles' => ['roles.manage', 'menus.update'],
-        'DELETE api/auth/menu-roles/{menu_role}' => ['roles.manage', 'menus.update'],
-        'POST api/auth/menu-item-roles' => ['roles.manage', 'menus.update'],
-        'DELETE api/auth/menu-item-roles/{menu_item_role}' => ['roles.manage', 'menus.update'],
-
         'GET api/auth/system-actions' => ['permissions.assign', 'actions.create', 'actions.update'],
         'POST api/auth/system-actions' => ['permissions.assign', 'actions.create'],
         'GET api/auth/system-actions/{system_action}' => ['permissions.assign', 'actions.update'],
@@ -83,43 +61,37 @@ return [
         'DELETE api/auth/system-action-roles/{system_action_role}' => ['permissions.assign', 'actions.update'],
         'POST api/auth/user-system-actions' => ['permissions.assign', 'actions.update'],
         'DELETE api/auth/user-system-actions/{user_system_action}' => ['permissions.assign', 'actions.update'],
-
-        'GET api/auth/system-modules' => ['roles.manage', 'workspaces.create', 'workspaces.update'],
-        'POST api/auth/system-modules' => ['roles.manage', 'workspaces.create'],
-        'GET api/auth/system-modules/{system_module}' => ['roles.manage', 'workspaces.update'],
-        'PUT api/auth/system-modules/{system_module}' => ['roles.manage', 'workspaces.update'],
-        'PATCH api/auth/system-modules/{system_module}' => ['roles.manage', 'workspaces.update'],
-        'DELETE api/auth/system-modules/{system_module}' => ['roles.manage', 'workspaces.delete'],
-        'POST api/auth/system-module-roles' => ['roles.manage', 'workspaces.update'],
-        'DELETE api/auth/system-module-roles/{system_module_role}' => ['roles.manage', 'workspaces.update'],
-
-        'GET api/auth/system-pages' => ['roles.manage', 'workspaces.update'],
-        'POST api/auth/system-pages' => ['roles.manage', 'workspaces.create'],
-        'GET api/auth/system-pages/{system_page}' => ['roles.manage', 'workspaces.update'],
-        'PUT api/auth/system-pages/{system_page}' => ['roles.manage', 'workspaces.update'],
-        'PATCH api/auth/system-pages/{system_page}' => ['roles.manage', 'workspaces.update'],
-        'DELETE api/auth/system-pages/{system_page}' => ['roles.manage', 'workspaces.delete'],
-        'POST api/auth/system-page-roles' => ['roles.manage', 'workspaces.update'],
-        'DELETE api/auth/system-page-roles/{system_page_role}' => ['roles.manage', 'workspaces.update'],
-
+        'GET api/auth/system-modules' => ['roles.manage'],
+        'POST api/auth/system-modules' => ['roles.manage'],
+        'GET api/auth/system-modules/{system_module}' => ['roles.manage'],
+        'PUT api/auth/system-modules/{system_module}' => ['roles.manage'],
+        'PATCH api/auth/system-modules/{system_module}' => ['roles.manage'],
+        'DELETE api/auth/system-modules/{system_module}' => ['roles.manage'],
+        'POST api/auth/system-module-roles' => ['roles.manage'],
+        'DELETE api/auth/system-module-roles/{system_module_role}' => ['roles.manage'],
+        'GET api/auth/system-pages' => ['roles.manage'],
+        'POST api/auth/system-pages' => ['roles.manage'],
+        'GET api/auth/system-pages/{system_page}' => ['roles.manage'],
+        'PUT api/auth/system-pages/{system_page}' => ['roles.manage'],
+        'PATCH api/auth/system-pages/{system_page}' => ['roles.manage'],
+        'DELETE api/auth/system-pages/{system_page}' => ['roles.manage'],
+        'POST api/auth/system-page-roles' => ['roles.manage'],
+        'DELETE api/auth/system-page-roles/{system_page_role}' => ['roles.manage'],
         // Library settings (matrix)
         'GET api/settings/library' => ['settings.library.view'],
         'GET api/settings/library/history' => ['settings.library.view'],
         'PUT api/settings/library' => ['settings.library.update'],
         'DELETE api/settings/library/pending/{id}' => ['settings.library.update'],
         'POST api/settings/library/reset' => ['settings.library.reset'],
-
         // Provider credentials (secrets write-only)
         'GET api/settings/providers' => ['settings.providers'],
         'PUT api/settings/providers' => ['settings.providers'],
-
         // Branding (mutate only — GET is public)
         'POST api/settings/branding' => ['branding.manage', 'appearance.update'],
         'GET api/settings/login-slides/manage' => ['branding.manage', 'login-slides.create', 'login-slides.update'],
         'POST api/settings/login-slides' => ['branding.manage', 'login-slides.create'],
         'POST api/settings/login-slides/{loginSlide}' => ['branding.manage', 'login-slides.update'],
         'DELETE api/settings/login-slides/{loginSlide}' => ['branding.manage', 'login-slides.delete'],
-
         // Catalogue (matrix + legacy librarian.* )
         'GET api/book-catalogue/books' => ['catalogue.view', 'catalogue.manage', 'librarian.books.update', 'librarian.books.create'],
         'GET api/book-catalogue/books/summary' => ['catalogue.view', 'catalogue.manage', 'librarian.books.update'],
@@ -162,7 +134,6 @@ return [
         'POST api/book-catalogue/favourites' => ['favourites.manage'],
         'DELETE api/book-catalogue/favourites/{book}' => ['favourites.manage'],
         'PATCH api/book-catalogue/physical-book-copies/{physicalBookCopy}/status' => ['copies.manage', 'librarian.books.update'],
-
         // Borrowing
         'GET api/book-borrowing/librarian/dashboard' => ['requests.decide', 'loans.issue', 'librarian.requests.approve'],
         'GET api/book-borrowing/requests' => ['requests.create', 'requests.decide', 'loans.view', 'librarian.requests.approve'],
@@ -189,7 +160,6 @@ return [
         'GET api/book-borrowing/penalty-batches/{penalty_batch}' => ['penalties.view', 'penalties.mark_paid', 'librarian.penalties.mark-paid'],
         'POST api/book-borrowing/penalty-batches/{penalty_batch}/mark-paid' => ['penalties.mark_paid', 'librarian.penalties.mark-paid'],
         'POST api/book-borrowing/penalty-batches/{penalty_batch}/stop' => ['penalties.forgive', 'librarian.penalties.stop'],
-
         // Academic master data (FR-USR-06)
         'GET api/academic/faculties' => [],
         'POST api/academic/faculties' => ['academic.manage'],
@@ -215,20 +185,17 @@ return [
         'PUT api/academic/courses/{course}' => ['academic.manage'],
         'PATCH api/academic/courses/{course}' => ['academic.manage'],
         'DELETE api/academic/courses/{course}' => ['academic.manage'],
-
         // Notifications (own inbox + preferences)
         'GET api/notifications' => [],
         'POST api/notifications/read-all' => [],
         'POST api/notifications/{notification}/read' => [],
         'GET api/notifications/preferences' => ['notifications.preferences'],
         'PUT api/notifications/preferences' => ['notifications.preferences'],
-
         // Reading
         'GET api/book-reading/member/dashboard' => ['reading.read', 'catalogue.view'],
         'GET api/book-reading/reading-histories' => ['reading.history.view', 'readings.export', 'librarian.readings.export'],
         'POST api/book-reading/reading-histories/track' => ['reading.read'],
         'GET api/book-reading/reading-histories/{reading_history}' => ['reading.history.view', 'readings.export', 'librarian.readings.export'],
-
         // Sanctum default user endpoint
         'GET api/user' => [],
     ],

@@ -17,7 +17,6 @@ class StoreSystemActionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'menu_item_id' => ['nullable', 'integer', 'exists:'.SchemaTable::forValidation('auth.menu_items').',id'],
             'role_id' => ['required', 'integer', 'exists:'.SchemaTable::forValidation('auth.roles').',id'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],

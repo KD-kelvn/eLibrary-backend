@@ -17,7 +17,7 @@ class SystemModuleSeeder extends Seeder
         $definitions = [
             [
                 'name' => 'Access Management',
-                'description' => 'Manage sessions, roles, accounts, menus, permissions, and the admin dashboard.',
+                'description' => 'Manage sessions, roles, accounts, permissions, and the admin dashboard.',
                 'code' => 'access-management',
                 'icon_code' => 'lock-access',
                 'bg_color' => '#0F4C5C',

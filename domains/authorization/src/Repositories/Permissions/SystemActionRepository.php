@@ -18,7 +18,6 @@ class SystemActionRepository
                     ->orWhere('code', 'like', "%{$search}%"));
             })
             ->when(isset($filters['is_active']), fn ($query) => $query->where('is_active', $filters['is_active']))
-            ->when(filled($filters['menu_item_id'] ?? null), fn ($query) => $query->where('menu_item_id', $filters['menu_item_id']))
             ->when(filled($filters['role_id'] ?? null), fn ($query) => $query->where('role_id', $filters['role_id']))
             ->latest('id')
             ->paginate($perPage);
@@ -28,7 +27,7 @@ class SystemActionRepository
     {
         return SystemAction::query()
             ->when($withRelations, fn ($query) => $query
-                ->with(['role', 'menuItem'])
+                ->with(['role'])
                 ->withCount('userGrants'))
             ->find($id);
     }
