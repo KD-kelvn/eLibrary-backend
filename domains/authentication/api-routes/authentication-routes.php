@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Authentication\Http\Controllers\AuthController;
 use Modules\Authentication\Http\Controllers\SessionController;
+use Modules\Authentication\Http\Controllers\UserImportController;
 use Modules\Authentication\Http\Controllers\UserManagementController;
 use Modules\Authentication\Http\Middleware\EnsureUserIsNotBlocked;
 
@@ -32,5 +33,10 @@ Route::prefix('auth')->group(function () {
         Route::patch('users/{user}/blocked', [UserManagementController::class, 'setBlocked']);
         Route::patch('users/{user}/active', [UserManagementController::class, 'setActive']);
         Route::post('users/{user}/photo', [UserManagementController::class, 'storePhoto']);
+
+        Route::get('user-imports/template', [UserImportController::class, 'template']);
+        Route::post('user-imports', [UserImportController::class, 'store']);
+        Route::post('user-imports/{userImport}/commit', [UserImportController::class, 'commit']);
+        Route::get('user-imports/{userImport}/errors', [UserImportController::class, 'errors']);
     });
 });
