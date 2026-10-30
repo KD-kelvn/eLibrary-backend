@@ -3,6 +3,7 @@
 namespace Modules\Authentication\Http\Resources;
 
 use Illuminate\Http\Request;
+use Modules\Authentication\Services\SessionIdleService;
 use Modules\Authorization\Http\Resources\NavigationWorkspaceResource;
 use Modules\Authorization\Http\Resources\RoleSummaryResource;
 use Modules\Authorization\Services\AccessContextService;
@@ -18,6 +19,8 @@ class AuthenticatedUserResource extends UserResource
             'roles' => RoleSummaryResource::collection($access['roles']),
             'modules' => NavigationWorkspaceResource::collection($access['modules']),
             'actions' => $access['actions']->pluck('code')->values(),
+            'sessionIdleTimeoutMin' => app(SessionIdleService::class)
+                ->idleTimeoutMinutesFor($this->resource),
         ];
     }
 }

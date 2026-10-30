@@ -6,6 +6,19 @@ use RuntimeException;
 
 class AuthenticationException extends RuntimeException
 {
+    public function __construct(
+        string $message = '',
+        int $code = 0,
+        protected ?string $errorCode = null,
+    ) {
+        parent::__construct($message, $code);
+    }
+
+    public function errorCode(): ?string
+    {
+        return $this->errorCode;
+    }
+
     public static function invalidCredentials(): self
     {
         return new self('Invalid credentials provided.', 401);
@@ -59,6 +72,15 @@ class AuthenticationException extends RuntimeException
     public static function challengeNotFound(): self
     {
         return new self('The sign-in challenge is invalid or has expired.', 422);
+    }
+
+    public static function sessionIdle(): self
+    {
+        return new self(
+            'Your session expired due to inactivity. Please sign in again.',
+            401,
+            'SESSION_IDLE',
+        );
     }
 
     public static function unprocessable(string $message): self

@@ -5,6 +5,7 @@ namespace Modules\Authorization\Services\AccessManagement;
 use App\Support\AdminActivity;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Modules\Authentication\Services\SessionService;
 use Modules\Authorization\Exceptions\AuthorizationException;
 use Modules\Authorization\Models\RevokedRole;
 use Modules\Authorization\Repositories\AccessManagement\RoleRevokingRepository;
@@ -16,6 +17,7 @@ class RoleRevokingService
         protected RoleRevokingRepository $repository,
         protected UserSystemActionService $userActions,
         protected LastAdminGuard $lastAdmin,
+        protected SessionService $sessions,
     ) {}
 
     public function list(array $filters = [], int $perPage = 15): LengthAwarePaginator
@@ -86,6 +88,8 @@ class RoleRevokingService
                 logName: 'authorization',
                 event: 'role.revoked',
             );
+
+            $this->sessions->rotateTokensForUserId((int) $assignment->user_id);
 
             return $revocation;
         });

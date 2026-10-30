@@ -14,11 +14,14 @@ trait IssuesApiTokens
         $request = request();
         $name = filled($deviceName) ? $deviceName : $this->defaultDeviceName();
 
-        $newToken = $user->createToken($name, ['*'], now()->addHours(1));
+        // Absolute Sanctum expiration is disabled; idle timeout (LP-S5) is enforced
+        // via last_used_at in SessionIdleService.
+        $newToken = $user->createToken($name, ['*']);
 
         $newToken->accessToken->forceFill([
             'ip_address' => $request?->ip(),
             'user_agent' => $request?->userAgent(),
+            'expires_at' => null,
         ])->save();
 
         return [

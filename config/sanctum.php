@@ -46,7 +46,9 @@ return [
      * | "expires_at" attribute, but first-party sessions are not affected.
      * |
      */
-    'expiration' => 3600,  // 1 hour
+    // Idle timeout is role-scoped (LP-S5) via SessionIdleService / last_used_at.
+    // Do not set a global absolute TTL here — members may idle up to 7 days.
+    'expiration' => null,
 
     /*
      * |--------------------------------------------------------------------------
