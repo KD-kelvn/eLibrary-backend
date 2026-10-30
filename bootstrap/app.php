@@ -23,15 +23,23 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => EnsurePermission::class,
         ]);
     })
-
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
-                return response()->json([
+                $payload = [
                     'success' => false,
                     'message' => $e->getMessage(),
                     'data' => null,
-                ], $e->getCode() >= 400 ? $e->getCode() : 400);
+                ];
+
+                if ($e->errorCode()) {
+                    $payload['code'] = $e->errorCode();
+                }
+
+                return response()->json(
+                    $payload,
+                    $e->getCode() >= 400 ? $e->getCode() : 400,
+                );
             }
         });
 
@@ -64,4 +72,5 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 422);
             }
         });
-    })->create();
+    })
+    ->create();

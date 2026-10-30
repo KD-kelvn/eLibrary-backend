@@ -5,6 +5,7 @@ namespace Modules\Authorization\Services\AccessManagement;
 use App\Support\AdminActivity;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Modules\Authentication\Services\SessionService;
 use Modules\Authorization\Exceptions\AuthorizationException;
 use Modules\Authorization\Models\UserRole;
 use Modules\Authorization\Repositories\AccessManagement\RoleAssignmentRepository;
@@ -17,6 +18,7 @@ class RoleAssignmentService
         protected UserSystemActionService $userActions,
         protected RoleActionGrantService $grants,
         protected LastAdminGuard $lastAdmin,
+        protected SessionService $sessions,
     ) {}
 
     public function list(array $filters = [], int $perPage = 15): LengthAwarePaginator
@@ -70,6 +72,8 @@ class RoleAssignmentService
                 event: 'role.assigned',
             );
 
+            $this->sessions->rotateTokensForUserId((int) $assignment->user_id);
+
             return $assignment;
         });
     }
@@ -84,6 +88,7 @@ class RoleAssignmentService
             );
         }
 
+        $previousUserId = (int) $assignment->user_id;
         $userId = $data['user_id'] ?? $assignment->user_id;
         $roleId = $data['role_id'] ?? $assignment->role_id;
 
@@ -93,11 +98,18 @@ class RoleAssignmentService
             );
         }
 
-        return $this->repository->update($assignment, collect($data)->only([
+        $updated = $this->repository->update($assignment, collect($data)->only([
             'user_id',
             'role_id',
             'expires_at',
         ])->all());
+
+        $this->sessions->rotateTokensForUserId($previousUserId);
+        if ((int) $userId !== $previousUserId) {
+            $this->sessions->rotateTokensForUserId((int) $userId);
+        }
+
+        return $updated;
     }
 
     public function destroy(int $id): void
@@ -105,6 +117,8 @@ class RoleAssignmentService
         $assignment = $this->findOrFail($id);
 
         $this->lastAdmin->assertCanRevokeAdminAssignment($assignment);
+
+        $userId = (int) $assignment->user_id;
 
         AdminActivity::log(
             'Role assignment deleted',
@@ -124,6 +138,7 @@ class RoleAssignmentService
 
         $this->userActions->revokeForUserRole($assignment);
         $this->repository->delete($assignment);
+        $this->sessions->rotateTokensForUserId($userId);
     }
 
     protected function findOrFail(int $id): UserRole

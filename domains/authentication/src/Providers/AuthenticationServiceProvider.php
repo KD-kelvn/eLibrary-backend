@@ -10,6 +10,7 @@ use Modules\Authentication\Models\PersonalAccessToken;
 use Modules\Authentication\Models\User;
 use Modules\Authentication\Policies\PersonalAccessTokenPolicy;
 use Modules\Authentication\Policies\UserPolicy;
+use Modules\Authentication\Services\SessionIdleService;
 
 class AuthenticationServiceProvider extends ServiceProvider
 {
@@ -26,6 +27,11 @@ class AuthenticationServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
 
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+
+        Sanctum::authenticateAccessTokensUsing(
+            fn ($accessToken, bool $isValid) => app(SessionIdleService::class)
+                ->assertAccessTokenNotIdle($accessToken, $isValid),
+        );
 
         // SMS channel (`sms` / `log_sms`) is registered by NotificationsServiceProvider (V1-006).
         Gate::policy(User::class, UserPolicy::class);

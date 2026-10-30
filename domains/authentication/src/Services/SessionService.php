@@ -141,4 +141,18 @@ class SessionService
 
         return $count;
     }
+
+    /**
+     * Privilege change: force re-auth so the next token picks up the new role set.
+     */
+    public function rotateTokensForUserId(int $userId): int
+    {
+        $user = User::query()->find($userId);
+
+        if (! $user) {
+            return 0;
+        }
+
+        return $this->revokeAllForUser($user);
+    }
 }
