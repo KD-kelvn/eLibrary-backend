@@ -32,6 +32,10 @@ return [
         'PATCH api/auth/users/{user}/blocked' => ['users.manage', 'users.block'],
         'PATCH api/auth/users/{user}/active' => ['users.manage', 'users.update', 'users.delete'],
         'POST api/auth/users/{user}/photo' => ['users.manage', 'users.update'],
+        'GET api/auth/user-imports/template' => ['users.import', 'users.manage'],
+        'POST api/auth/user-imports' => ['users.import', 'users.manage'],
+        'POST api/auth/user-imports/{userImport}/commit' => ['users.import', 'users.manage'],
+        'GET api/auth/user-imports/{userImport}/errors' => ['users.import', 'users.manage'],
         'GET api/auth/users/{user}/system-actions' => ['permissions.assign', 'actions.update'],
         'PUT api/auth/users/{user}/system-actions' => ['permissions.assign', 'actions.update'],
         // Roles
