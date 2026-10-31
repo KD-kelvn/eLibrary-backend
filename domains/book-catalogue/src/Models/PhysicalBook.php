@@ -3,19 +3,23 @@
 namespace Modules\BookCatalogue\Models;
 
 use App\Models\BaseModelWithAudits;
+use App\Support\QualifiedTable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PhysicalBook extends BaseModelWithAudits
 {
-    protected $table = 'book_catalog.physical_books';
-
     protected $fillable = [
         'book_detail_id',
         'shelf_id',
         'code_no',
         'copies',
     ];
+
+    public function getTable(): string
+    {
+        return QualifiedTable::name('book_catalog', 'physical_books');
+    }
 
     protected function casts(): array
     {

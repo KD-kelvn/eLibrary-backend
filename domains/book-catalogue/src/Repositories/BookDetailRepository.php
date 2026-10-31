@@ -3,7 +3,9 @@
 namespace Modules\BookCatalogue\Repositories;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Modules\BookCatalogue\Enums\PhysicalBookCopyStatusEnum;
 use Modules\BookCatalogue\Models\BookDetail;
 use Modules\BookCatalogue\Models\DigitalBook;
 use Modules\BookCatalogue\Models\PhysicalBook;
@@ -27,19 +29,31 @@ class BookDetailRepository
                 'subCategories',
                 'tags',
             ])
-            ->withCount(['physicalBooks', 'readingHistories'])
+            ->withCount([
+                'physicalBooks',
+                'readingHistories',
+                'copyRecords as available_copies_count' => fn (Builder $query) => $query
+                    ->where('status', PhysicalBookCopyStatusEnum::Available->value),
+                'copyRecords as on_loan_copies_count' => fn (Builder $query) => $query
+                    ->where('status', PhysicalBookCopyStatusEnum::OnLoan->value),
+            ])
             ->when(
                 filled($filters['search'] ?? null),
                 function ($query) use ($filters) {
                     $term = '%'.mb_strtolower($filters['search']).'%';
                     $query->where(fn ($builder) => $builder
                         ->whereRaw('LOWER(title) LIKE ?', [$term])
-                        ->orWhereRaw('LOWER(authors) LIKE ?', [$term]));
+                        ->orWhereRaw('LOWER(authors) LIKE ?', [$term])
+                        ->orWhereRaw('LOWER(isbn) LIKE ?', [$term]));
                 },
             )
             ->when(
                 filled($filters['author'] ?? null),
-                fn ($query) => $query->whereRaw('LOWER(authors) = ?', [mb_strtolower($filters['author'])]),
+                fn ($query) => $query->whereRaw('LOWER(authors) LIKE ?', ['%'.mb_strtolower($filters['author']).'%']),
+            )
+            ->when(
+                filled($filters['isbn'] ?? null),
+                fn ($query) => $query->whereRaw('LOWER(isbn) LIKE ?', ['%'.mb_strtolower($filters['isbn']).'%']),
             )
             ->when(
                 filled($filters['type_code'] ?? null),
@@ -65,6 +79,14 @@ class BookDetailRepository
                     'tags',
                     fn ($builder) => $builder->whereKey($filters['tag_id']),
                 ),
+            )
+            ->when(
+                ($filters['availability'] ?? null) === 'available',
+                fn ($query) => $this->applyAvailableScope($query),
+            )
+            ->when(
+                ($filters['availability'] ?? null) === 'unavailable',
+                fn ($query) => $this->applyUnavailableScope($query),
             )
             ->when(
                 ($filters['status'] ?? null) === 'active',
@@ -135,6 +157,51 @@ class BookDetailRepository
                     fn ($digital) => $digital->where('is_active', true),
                 );
         });
+    }
+
+    /**
+     * Digital (active) or physical with at least one AVAILABLE copy.
+     */
+    protected function applyAvailableScope($query)
+    {
+        return $query->where(function (Builder $builder) {
+            $builder
+                ->where(function (Builder $digital) {
+                    $digital
+                        ->where('type_code', 'DIGITAL')
+                        ->whereHas(
+                            'digitalBook',
+                            fn ($book) => $book->where('is_active', true),
+                        );
+                })
+                ->orWhere(function (Builder $physical) {
+                    $physical
+                        ->where('type_code', 'PHYSICAL')
+                        ->whereHas(
+                            'copyRecords',
+                            fn ($copies) => $copies->where(
+                                'status',
+                                PhysicalBookCopyStatusEnum::Available->value,
+                            ),
+                        );
+                });
+        });
+    }
+
+    /**
+     * Physical titles with no AVAILABLE copies (digital never matches).
+     */
+    protected function applyUnavailableScope($query)
+    {
+        return $query
+            ->where('type_code', 'PHYSICAL')
+            ->whereDoesntHave(
+                'copyRecords',
+                fn ($copies) => $copies->where(
+                    'status',
+                    PhysicalBookCopyStatusEnum::Available->value,
+                ),
+            );
     }
 
     /**
@@ -243,7 +310,14 @@ class BookDetailRepository
                 'subCategories',
                 'tags',
             ])
-            ->withCount(['physicalBooks', 'readingHistories'])
+            ->withCount([
+                'physicalBooks',
+                'readingHistories',
+                'copyRecords as available_copies_count' => fn (Builder $query) => $query
+                    ->where('status', PhysicalBookCopyStatusEnum::Available->value),
+                'copyRecords as on_loan_copies_count' => fn (Builder $query) => $query
+                    ->where('status', PhysicalBookCopyStatusEnum::OnLoan->value),
+            ])
             ->find($id);
     }
 

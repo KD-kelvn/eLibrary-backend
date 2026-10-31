@@ -3,18 +3,22 @@
 namespace Modules\BookCatalogue\Models;
 
 use App\Models\BaseModelWithAudits;
+use App\Support\QualifiedTable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends BaseModelWithAudits
 {
-    protected $table = 'book_catalog.categories';
-
     protected $fillable = [
         'name',
         'description',
         'code',
     ];
+
+    public function getTable(): string
+    {
+        return QualifiedTable::name('book_catalog', 'categories');
+    }
 
     public function bookHasCategories(): HasMany
     {

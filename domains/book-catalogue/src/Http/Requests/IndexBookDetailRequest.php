@@ -22,6 +22,7 @@ class IndexBookDetailRequest extends FormRequest
         return [
             'search' => ['nullable', 'string', 'max:255'],
             'author' => ['nullable', 'string', 'max:255'],
+            'isbn' => ['nullable', 'string', 'max:255'],
             'type_code' => ['nullable', Rule::enum(BookTypeEnum::class)],
             'category_id' => [
                 'nullable',
@@ -38,6 +39,7 @@ class IndexBookDetailRequest extends FormRequest
                 'integer',
                 'exists:'.SchemaTable::forValidation('book_catalog.tags').',id',
             ],
+            'availability' => ['nullable', Rule::in(['available', 'unavailable'])],
             'status' => ['nullable', Rule::in(['active', 'inactive'])],
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],

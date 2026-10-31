@@ -3,14 +3,13 @@
 namespace Modules\BookReading\Models;
 
 use App\Models\BaseModelWithAudits;
+use App\Support\QualifiedTable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Authentication\Models\User;
 use Modules\BookCatalogue\Models\BookDetail;
 
 class ReadingHistory extends BaseModelWithAudits
 {
-    protected $table = 'book_catalog.reading_histories';
-
     protected $fillable = [
         'user_id',
         'book_detail_id',
@@ -28,6 +27,11 @@ class ReadingHistory extends BaseModelWithAudits
         'updated_at',
         'deleted_at',
     ];
+
+    public function getTable(): string
+    {
+        return QualifiedTable::name('book_catalog', 'reading_histories');
+    }
 
     protected function casts(): array
     {

@@ -29,6 +29,12 @@ class PhysicalBookResource extends JsonResource
                     ->where('status', PhysicalBookCopyStatusEnum::Available)
                     ->count(),
             ),
+            'onLoanCopies' => $this->whenLoaded(
+                'copyRecords',
+                fn () => $this->copyRecords
+                    ->where('status', PhysicalBookCopyStatusEnum::OnLoan)
+                    ->count(),
+            ),
             'copyRecords' => PhysicalBookCopyResource::collection($this->whenLoaded('copyRecords')),
             'bookDetail' => BookDetailSummaryResource::make($this->whenLoaded('bookDetail')),
             'shelf' => ShelfSummaryResource::make($this->whenLoaded('shelf')),
