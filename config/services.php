@@ -42,6 +42,12 @@ return [
     'university' => [
         'hmac_secret' => env('UNIVERSITY_SYNC_HMAC_SECRET', ''),
         'timestamp_tolerance_seconds' => (int) env('UNIVERSITY_SYNC_TIMESTAMP_TOLERANCE', 300),
+        'base_url' => env('UNIVERSITY_CORE_BASE_URL', ''),
+        'students_path' => env('UNIVERSITY_CORE_STUDENTS_PATH', '/students'),
+        'api_key' => env('UNIVERSITY_CORE_API_KEY', ''),
+        'api_key_header' => env('UNIVERSITY_CORE_API_KEY_HEADER', 'X-Api-Key'),
+        'auth_scheme' => env('UNIVERSITY_CORE_AUTH_SCHEME', 'bearer'),
+        'timeout' => (int) env('UNIVERSITY_CORE_TIMEOUT', 30),
     ],
 
     'sms' => [

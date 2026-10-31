@@ -22,13 +22,19 @@ class ProviderSettingsController extends Controller
 
     public function update(UpdateProviderSettingsRequest $request): JsonResponse
     {
-        $sms = $request->validated('sms') ?? [];
+        $data = $request->validated();
+        $userId = $request->user()?->id;
+
+        if (isset($data['sms']) && is_array($data['sms'])) {
+            $this->providers->updateSms($data['sms'], $userId);
+        }
+
+        if (isset($data['university']) && is_array($data['university'])) {
+            $this->providers->updateUniversity($data['university'], $userId);
+        }
 
         return response()->json([
-            'data' => $this->providers->updateSms(
-                is_array($sms) ? $sms : [],
-                $request->user()?->id,
-            ),
+            'data' => $this->providers->publicView(),
         ]);
     }
 }

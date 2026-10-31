@@ -13,6 +13,8 @@ class ProviderSettingsService
 {
     public const GROUP_SMS = 'sms';
 
+    public const GROUP_UNIVERSITY = 'university';
+
     public const SMS_DRIVER_LOG = 'log';
 
     public const SMS_DRIVER_BEEM = 'beem';
@@ -33,13 +35,17 @@ class ProviderSettingsService
      */
     private const SMS_SECRET_KEYS = ['api_key', 'secret_key', 'api_secret'];
 
+    /** @var list<string> */
+    private const UNIVERSITY_SECRET_KEYS = ['hmac_secret', 'api_key'];
+
     /**
-     * @return array{sms: array<string, mixed>}
+     * @return array{sms: array<string, mixed>, university: array<string, mixed>}
      */
     public function publicView(): array
     {
         return [
             'sms' => $this->redactSms($this->smsConfig()),
+            'university' => $this->redactUniversity($this->universityConfig()),
         ];
     }
 
@@ -89,6 +95,112 @@ class ProviderSettingsService
         );
 
         return $this->publicView();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function universityConfig(): array
+    {
+        $stored = $this->raw(self::GROUP_UNIVERSITY);
+        $env = config('services.university', []);
+
+        return [
+            'base_url' => (string) ($stored['base_url'] ?? $env['base_url'] ?? ''),
+            'students_path' => (string) ($stored['students_path'] ?? $env['students_path'] ?? '/students'),
+            'api_key' => (string) ($stored['api_key'] ?? $env['api_key'] ?? ''),
+            'api_key_header' => (string) ($stored['api_key_header'] ?? $env['api_key_header'] ?? 'X-Api-Key'),
+            'auth_scheme' => (string) ($stored['auth_scheme'] ?? $env['auth_scheme'] ?? 'bearer'),
+            'timeout' => (int) ($stored['timeout'] ?? $env['timeout'] ?? 30),
+            'hmac_secret' => (string) ($stored['hmac_secret'] ?? $env['hmac_secret'] ?? ''),
+            'timestamp_tolerance_seconds' => (int) ($stored['timestamp_tolerance_seconds']
+                ?? $env['timestamp_tolerance_seconds'] ?? 300),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array{sms: array<string, mixed>, university: array<string, mixed>}
+     */
+    public function updateUniversity(array $input, ?int $updatedBy = null): array
+    {
+        $current = $this->universityConfig();
+        foreach ([
+            'base_url',
+            'students_path',
+            'api_key_header',
+            'auth_scheme',
+            'timeout',
+            'timestamp_tolerance_seconds',
+            'hmac_secret',
+            'api_key',
+        ] as $key) {
+            if (! array_key_exists($key, $input)) {
+                continue;
+            }
+            $value = $input[$key];
+            if (in_array($key, self::UNIVERSITY_SECRET_KEYS, true) && ($value === null || $value === '')) {
+                continue;
+            }
+            if ($key === 'timeout' || $key === 'timestamp_tolerance_seconds') {
+                $current[$key] = (int) $value;
+
+                continue;
+            }
+            if (is_scalar($value) || $value === null) {
+                $current[$key] = $value === null ? '' : (string) $value;
+            }
+        }
+
+        if (! in_array($current['auth_scheme'], ['bearer', 'header', 'none'], true)) {
+            abort(422, 'Invalid university auth_scheme.');
+        }
+
+        $row = ProviderSetting::query()->updateOrCreate(
+            ['group' => self::GROUP_UNIVERSITY],
+            [
+                'config' => $current,
+                'updated_by' => $updatedBy ?? auth()->id(),
+            ],
+        );
+
+        $touched = [];
+        foreach (self::UNIVERSITY_SECRET_KEYS as $secret) {
+            $value = $input[$secret] ?? null;
+            if (is_string($value) && $value !== '') {
+                $touched[] = $secret;
+            }
+        }
+
+        AdminActivity::log(
+            'Provider settings updated',
+            $row,
+            [
+                'group' => self::GROUP_UNIVERSITY,
+                'secrets_touched' => $touched,
+            ],
+        );
+
+        return $this->publicView();
+    }
+
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
+     */
+    protected function redactUniversity(array $config): array
+    {
+        $out = [];
+        foreach ($config as $key => $value) {
+            if (in_array($key, self::UNIVERSITY_SECRET_KEYS, true)) {
+                $out[$key.'_set'] = is_string($value) && $value !== '';
+
+                continue;
+            }
+            $out[$key] = $value;
+        }
+
+        return $out;
     }
 
     /**
