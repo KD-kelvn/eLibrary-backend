@@ -3,16 +3,16 @@
 namespace Modules\BookCatalogue\Models;
 
 use App\Models\BaseModelWithAudits;
+use App\Support\QualifiedTable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Modules\BookCatalogue\Enums\BookTypeEnum;
 use Modules\BookReading\Models\ReadingHistory;
 
 class BookDetail extends BaseModelWithAudits
 {
-    protected $table = 'book_catalog.book_details';
-
     protected $fillable = [
         'type_code',
         'title',
@@ -36,9 +36,26 @@ class BookDetail extends BaseModelWithAudits
         ];
     }
 
+    public function getTable(): string
+    {
+        return QualifiedTable::name('book_catalog', 'book_details');
+    }
+
     public function physicalBooks(): HasMany
     {
         return $this->hasMany(PhysicalBook::class, 'book_detail_id', 'id');
+    }
+
+    public function copyRecords(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            PhysicalBookCopy::class,
+            PhysicalBook::class,
+            'book_detail_id',
+            'physical_book_id',
+            'id',
+            'id',
+        );
     }
 
     public function digitalBook(): HasOne
@@ -65,7 +82,7 @@ class BookDetail extends BaseModelWithAudits
     {
         return $this->belongsToMany(
             Category::class,
-            'book_catalog.book_has_categories',
+            (new BookHasCategory)->getTable(),
             'book_detail_id',
             'category_id',
         )->withPivot('id');
@@ -75,7 +92,7 @@ class BookDetail extends BaseModelWithAudits
     {
         return $this->belongsToMany(
             SubCategory::class,
-            'book_catalog.book_has_sub_categories',
+            (new BookHasSubCategory)->getTable(),
             'book_detail_id',
             'sub_category_id',
         )->withPivot('id');
@@ -85,7 +102,7 @@ class BookDetail extends BaseModelWithAudits
     {
         return $this->belongsToMany(
             Tag::class,
-            'book_catalog.book_has_tags',
+            (new BookHasTag)->getTable(),
             'book_detail_id',
             'tag_id',
         )->withPivot('id');

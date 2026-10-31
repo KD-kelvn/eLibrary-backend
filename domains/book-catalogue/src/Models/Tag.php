@@ -3,18 +3,22 @@
 namespace Modules\BookCatalogue\Models;
 
 use App\Models\BaseModelWithAudits;
+use App\Support\QualifiedTable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tag extends BaseModelWithAudits
 {
-    protected $table = 'book_catalog.tags';
-
     protected $fillable = [
         'name',
         'description',
         'code',
     ];
+
+    public function getTable(): string
+    {
+        return QualifiedTable::name('book_catalog', 'tags');
+    }
 
     public function bookHasTags(): HasMany
     {

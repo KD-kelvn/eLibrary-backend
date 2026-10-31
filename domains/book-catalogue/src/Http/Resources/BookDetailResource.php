@@ -6,6 +6,7 @@ use App\Support\PublicStorageUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\BookCatalogue\Models\BookDetail;
+use Modules\BookCatalogue\Support\BookAvailability;
 
 /**
  * @mixin BookDetail
@@ -33,6 +34,7 @@ class BookDetailResource extends JsonResource
             'language' => $this->language,
             'pages' => $this->pages,
             'cover' => $this->resolveCoverUrl(),
+            'availability' => BookAvailability::for($this->resource),
             'physicalBooks' => PhysicalBookResource::collection($this->whenLoaded('physicalBooks')),
             'digitalBook' => DigitalBookResource::make($this->whenLoaded('digitalBook')),
             'categories' => CategorySummaryResource::collection($this->whenLoaded('categories')),

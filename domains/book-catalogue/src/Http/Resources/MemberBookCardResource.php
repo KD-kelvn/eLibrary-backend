@@ -6,6 +6,7 @@ use App\Support\PublicStorageUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\BookCatalogue\Models\BookDetail;
+use Modules\BookCatalogue\Support\BookAvailability;
 
 /**
  * Slim book card for member dashboard / favourites.
@@ -35,6 +36,7 @@ class MemberBookCardResource extends JsonResource
                 'value' => $this->type_code?->value,
                 'label' => $this->type_code?->label(),
             ],
+            'availability' => BookAvailability::for($this->resource),
             'categories' => CategorySummaryResource::collection($this->whenLoaded('categories')),
             'tags' => TagSummaryResource::collection($this->whenLoaded('tags')),
             'isFavourite' => (bool) ($this->is_favourite ?? false),

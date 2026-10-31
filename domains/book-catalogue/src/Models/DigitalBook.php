@@ -3,13 +3,12 @@
 namespace Modules\BookCatalogue\Models;
 
 use App\Models\BaseModelWithAudits;
+use App\Support\QualifiedTable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\BookCatalogue\Enums\EbookFormatEnum;
 
 class DigitalBook extends BaseModelWithAudits
 {
-    protected $table = 'book_catalog.digital_books';
-
     protected $fillable = [
         'book_detail_id',
         'file_cover',
@@ -22,6 +21,11 @@ class DigitalBook extends BaseModelWithAudits
         'is_active',
         'checksum',
     ];
+
+    public function getTable(): string
+    {
+        return QualifiedTable::name('book_catalog', 'digital_books');
+    }
 
     protected function casts(): array
     {

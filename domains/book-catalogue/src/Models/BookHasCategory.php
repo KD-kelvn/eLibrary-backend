@@ -3,16 +3,20 @@
 namespace Modules\BookCatalogue\Models;
 
 use App\Models\BaseModelWithAudits;
+use App\Support\QualifiedTable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BookHasCategory extends BaseModelWithAudits
 {
-    protected $table = 'book_catalog.book_has_categories';
-
     protected $fillable = [
         'book_detail_id',
         'category_id',
     ];
+
+    public function getTable(): string
+    {
+        return QualifiedTable::name('book_catalog', 'book_has_categories');
+    }
 
     public function bookDetail(): BelongsTo
     {
