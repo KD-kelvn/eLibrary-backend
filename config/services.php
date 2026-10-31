@@ -39,6 +39,11 @@ return [
     | SMS providers (V1-006). Runtime overrides live in provider_settings (encrypted).
     | Driver: log | beem | institutional
     */
+    'university' => [
+        'hmac_secret' => env('UNIVERSITY_SYNC_HMAC_SECRET', ''),
+        'timestamp_tolerance_seconds' => (int) env('UNIVERSITY_SYNC_TIMESTAMP_TOLERANCE', 300),
+    ],
+
     'sms' => [
         'driver' => env('SMS_DRIVER', 'log'),
         'beem' => [

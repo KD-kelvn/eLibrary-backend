@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d37f7668f1c679c541ad1cbd8abb6c1b",
+    "content-hash": "78102d9df5e34cb310d24e2235daea9b",
     "packages": [
         {
             "name": "brick/math",
@@ -3572,6 +3572,39 @@
             "license": [
                 "proprietary"
             ],
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "modules/integrations",
+            "version": "1.0",
+            "dist": {
+                "type": "path",
+                "url": "domains/integrations",
+                "reference": "7ecd363e19fc4c8cec4d8d18c0c6b76e67c998b9"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Modules\\Integrations\\Providers\\IntegrationsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Integrations\\": "src/",
+                    "Modules\\Integrations\\Tests\\": "tests/",
+                    "Modules\\Integrations\\Database\\Factories\\": "database/factories/",
+                    "Modules\\Integrations\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "University sync and external integration endpoints",
             "transport-options": {
                 "symlink": true,
                 "relative": true
