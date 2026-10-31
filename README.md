@@ -52,8 +52,12 @@ Other keys in `.env.example` that matter:
 | `AUTH_OTP_EXPOSE_IN_RESPONSE` | `true` returns the OTP in the API response for local testing. **Must be `false` in production.** |
 | `FILESYSTEM_DISK` | Default disk. Ebooks always use the private `ebooks` disk (`storage/app/private`) |
 | `AWS_*` | Only if you move storage to S3 |
+| `UNIVERSITY_SYNC_HMAC_SECRET` | Shared HMAC secret for core → library student push (required for push) |
+| `UNIVERSITY_SYNC_TIMESTAMP_TOLERANCE` | Allowed clock skew in seconds (default `300`) |
 
 SMS uses `SmsProvider` (`log` | `beem` | `institutional`). Default is `log`. Configure via `SMS_DRIVER` / `BEEM_*` env or `PUT /api/settings/providers` (secrets write-only). Beem request shape matches family-hub.
+
+University student push (HMAC): see design pack [`docs/v1/09-university-sync-integration.md`](../design/docs/v1/09-university-sync-integration.md).
 
 Then create the database and run:
 
