@@ -39,6 +39,15 @@ class UpdateProviderSettingsRequest extends FormRequest
             'sms.institutional.to_field' => ['sometimes', 'nullable', 'string', 'max:64'],
             'sms.institutional.message_field' => ['sometimes', 'nullable', 'string', 'max:64'],
             'sms.institutional.sender_field' => ['sometimes', 'nullable', 'string', 'max:64'],
+            'university' => ['sometimes', 'array'],
+            'university.base_url' => ['sometimes', 'nullable', 'url', 'max:255'],
+            'university.students_path' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'university.api_key' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'university.api_key_header' => ['sometimes', 'nullable', 'string', 'max:64'],
+            'university.auth_scheme' => ['sometimes', 'nullable', 'string', Rule::in(['bearer', 'header', 'none'])],
+            'university.timeout' => ['sometimes', 'nullable', 'integer', 'min:5', 'max:120'],
+            'university.hmac_secret' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'university.timestamp_tolerance_seconds' => ['sometimes', 'nullable', 'integer', 'min:60', 'max:3600'],
         ];
     }
 }

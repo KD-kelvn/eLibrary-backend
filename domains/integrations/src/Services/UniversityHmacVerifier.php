@@ -3,7 +3,6 @@
 namespace Modules\Integrations\Services;
 
 use Modules\Integrations\Exceptions\IntegrationsException;
-use Modules\Settings\Models\ProviderSetting;
 
 /**
  * HMAC auth for university push (FR-SYNC-01).
@@ -11,20 +10,16 @@ use Modules\Settings\Models\ProviderSetting;
  */
 class UniversityHmacVerifier
 {
-    public const GROUP = 'university';
+    public function __construct(private readonly UniversityProviderConfig $config) {}
 
     public function secret(): string
     {
-        $stored = ProviderSetting::query()->where('group', self::GROUP)->first();
-        $config = is_array($stored?->config) ? $stored->config : [];
-        $secret = (string) ($config['hmac_secret'] ?? config('services.university.hmac_secret', ''));
-
-        return $secret;
+        return $this->config->pushAuth()['hmac_secret'];
     }
 
     public function toleranceSeconds(): int
     {
-        return (int) config('services.university.timestamp_tolerance_seconds', 300);
+        return $this->config->pushAuth()['timestamp_tolerance_seconds'];
     }
 
     /**

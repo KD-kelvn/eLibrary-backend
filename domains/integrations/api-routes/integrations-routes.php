@@ -10,5 +10,6 @@ Route::post('university/students', [UniversityStudentPushController::class, 'sto
 
 Route::middleware(['auth:sanctum', EnsureUserIsNotBlocked::class, 'permission'])->group(function () {
     Route::get('sync-runs', [SyncRunController::class, 'index']);
+    Route::post('sync-runs', [SyncRunController::class, 'store']);
     Route::get('sync-runs/{syncRun}', [SyncRunController::class, 'show']);
 });

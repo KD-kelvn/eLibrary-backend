@@ -1,8 +1,10 @@
 <?php
 
+use Cron\CronExpression;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+use Modules\Settings\Services\SettingsService;
 use Spatie\ScheduleMonitor\Models\MonitoredScheduledTaskLogItem;
 
 Artisan::command('inspire', function () {
@@ -57,3 +59,25 @@ Schedule::command('settings:activate-pending')
     ->name('settings-activate-pending')
     ->monitorName('settings-activate-pending')
     ->withoutOverlapping();
+
+// FR-SYNC-02 — pull when sync.pull_cron matches (dispatcher every minute; SDD §4 / §12).
+Schedule::command('university:sync-pull')
+    ->everyMinute()
+    ->name('university-sync-pull')
+    ->monitorName('university-sync-pull')
+    ->withoutOverlapping()
+    ->when(function () {
+        if (! app(SettingsService::class)->get('sync.pull_enabled')) {
+            return false;
+        }
+
+        $expression = (string) app(SettingsService::class)->get('sync.pull_cron');
+
+        try {
+            return (new CronExpression($expression))->isDue(now());
+        } catch (Throwable) {
+            return false;
+        }
+    })
+    ->appendOutputTo($schedulerConsoleLog)
+    ->storeOutputInDb();
