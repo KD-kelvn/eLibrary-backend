@@ -1,0 +1,24 @@
+{
+    "name": "modules/integrations",
+    "description": "University sync and external integration endpoints",
+    "type": "library",
+    "version": "1.0",
+    "license": "proprietary",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Modules\\Integrations\\": "src/",
+            "Modules\\Integrations\\Tests\\": "tests/",
+            "Modules\\Integrations\\Database\\Factories\\": "database/factories/",
+            "Modules\\Integrations\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "minimum-stability": "stable",
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Integrations\\Providers\\IntegrationsServiceProvider"
+            ]
+        }
+    }
+}

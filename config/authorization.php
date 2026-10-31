@@ -200,6 +200,9 @@ return [
         'GET api/book-reading/reading-histories' => ['reading.history.view', 'readings.export', 'librarian.readings.export'],
         'POST api/book-reading/reading-histories/track' => ['reading.read'],
         'GET api/book-reading/reading-histories/{reading_history}' => ['reading.history.view', 'readings.export', 'librarian.readings.export'],
+        // University sync (V1-023)
+        'GET api/integrations/sync-runs' => ['sync.view'],
+        'GET api/integrations/sync-runs/{syncRun}' => ['sync.view'],
         // Sanctum default user endpoint
         'GET api/user' => [],
     ],
@@ -218,5 +221,6 @@ return [
         'GET api/settings/login-slides',
         'GET api/settings/library/public',
         'GET up',
+        'POST api/integrations/university/students',
     ],
 ];
